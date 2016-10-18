@@ -4,7 +4,7 @@ import pathlib
 import struct
 import os
 from collections import namedtuple
-from carmack import carmack_decompress
+from carmack import carmack_decompress, rlew_decompress
 
 # All made possible with the help of:
 # http://web.archive.org/web/20160625002331/http://devinsmith.net/backups/bruce/wolf3d.html
@@ -84,8 +84,8 @@ def extract_level_headers(gamedir, offsets):
             map_data = seek_and_read(f, header.map_pointer, header.map_size)
             other_data = seek_and_read(f, header.other_pointer, header.other_size)
 
-            object_data = carmack_decompress(object_data)
-            map_data = carmack_decompress(map_data)
+            # object_data = rlew_decompress(carmack_decompress(object_data))
+            map_data = rlew_decompress(carmack_decompress(map_data))
             other_data = carmack_decompress(other_data)
 
 
