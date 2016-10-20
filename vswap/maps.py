@@ -9,6 +9,18 @@ from vswap.carmack import carmack_decompress, rlew_decompress
 # All made possible with the help of:
 # http://web.archive.org/web/20160625002331/http://devinsmith.net/backups/bruce/wolf3d.html
 
+def print_map(map_bytes, map_width, map_height):
+    decompress = '<' + 'H' * (map_width * map_height)
+    data = struct.unpack(decompress, map_bytes)
+
+    for i in range(map_width):
+        for j in range(map_height):
+            index = (i*map_width) + j
+            print("{:02X}".format(data[index]), end=' ')
+
+        print('')
+
+
 def extract_map_offsets(gamedir):
     '''Gets from MAPHEAD the offsets of the map data
     :param pathlib.Path gamedir: location of the game wiht a MAPHEAD
@@ -88,6 +100,7 @@ def extract_level_headers(gamedir, offsets):
             map_data = rlew_decompress(carmack_decompress(map_data))
             other_data = carmack_decompress(other_data)
 
+            print_map(map_data, header.width, header.height)
 
             b = MapData(header, object_data, map_data, other_data)
             maps.append(b)

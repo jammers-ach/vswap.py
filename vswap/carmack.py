@@ -58,7 +58,7 @@ def carmack_decompress(data):
                     src_pointer += 2
                     copy_oss = oss * 2
 
-                for i in range(cpy_cnt):
+                for i in range(cpy_cnt*2): # cpy_cnt is in words
                     new_data[dest_pointer] = new_data[copy_oss + i]
                     dest_pointer += 1
 
@@ -66,9 +66,6 @@ def carmack_decompress(data):
             new_data[dest_pointer] = cpy_cnt
             new_data[dest_pointer+1] = cpy_type
             dest_pointer +=2
-
-
-    hexdump(new_data)
 
     return bytes(new_data)
 
@@ -88,12 +85,6 @@ def rlew_decompress(data):
             w2 = readword(data, src_pointer) # Copy count
             w3 = readword(data, src_pointer+2) # Copy datao
             src_pointer += 4
-
-            print("Decompressing {} words, currently read {}, {} in total".format(
-                w2,
-                words_read,
-                size
-            ))
 
             if w2 + words_read > size:
                 raise IndexError("Trying to decompress {} words, when {} read, and {} in total".format(
