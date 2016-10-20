@@ -18,6 +18,15 @@ def hexdump(data, newline=True):
     if newline:
         print('')
 
+def hexdump_pointer(data, pointer):
+    for b in data:
+        print("{:02X}".format(b), end=' ')
+
+    print('')
+    for i in range(pointer):
+        print('   ', end='')
+    print('^')
+
 def carmack_decompress(data):
     # First word (2 bytes) tell us the size of
     # The uncompressed data in bytes
@@ -66,8 +75,8 @@ def carmack_decompress(data):
 
 def rlew_decompress(data):
     size = int(readword(data,0) / 2)
-    print("rlew Should dcompress", size, " words data is:", len(data), "btes")
-    new_data = []
+    print("rlew Should dcompress", size, " words data is:", len(data), "bytes")
+    decomp_words = []
 
     src_pointer = 2
     words_read = 0
@@ -75,11 +84,10 @@ def rlew_decompress(data):
         w1 = readword(data, src_pointer) # Magic word
         src_pointer += 2
 
-
         if w1 == 0xABCD:
             w2 = readword(data, src_pointer) # Copy count
             w3 = readword(data, src_pointer+2) # Copy datao
-            src_pointer += 6
+            src_pointer += 4
 
             print("Decompressing {} words, currently read {}, {} in total".format(
                 w2,
@@ -95,13 +103,15 @@ def rlew_decompress(data):
                 ))
 
             for i in range(w2):
-                new_data.append(w3)
+                decomp_words.append(w3)
 
             words_read += w2
         else:
-            new_data.append(w1)
+            decomp_words.append(w1)
             words_read += 1
 
-    assert False, "bailing out for developing"
+    #Convert back to words
+    to_bytes = lambda x: struct.pack('<H',x)
+    new_bytes = [b for w in decomp_words for b in to_bytes(w)]
 
-    return bytes(new_data)
+    return bytes(new_bytes)

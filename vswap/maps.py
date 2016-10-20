@@ -4,7 +4,7 @@ import pathlib
 import struct
 import os
 from collections import namedtuple
-from carmack import carmack_decompress, rlew_decompress
+from vswap.carmack import carmack_decompress, rlew_decompress
 
 # All made possible with the help of:
 # http://web.archive.org/web/20160625002331/http://devinsmith.net/backups/bruce/wolf3d.html
