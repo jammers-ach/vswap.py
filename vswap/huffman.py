@@ -19,6 +19,9 @@ class HuffmanNode(object):
     def __gt__(self, other):
         return other
 
+    def __repr__(self):
+        return "({},{})".format(self.left, self.right)
+
 class HuffmanTree(object):
 
     def __init__(self):
@@ -104,13 +107,30 @@ class HuffmanTree(object):
 
     @classmethod
     def from_tuple(cls, tree_as_tuple):
-        pass
+        root = cls._from_tuple(tree_as_tuple)
+        tree = cls()
+        tree.root = (0, root)
+
+        return tree
+
+    @classmethod
+    def _from_tuple(cls, tree_as_tuple):
+        l, r = tree_as_tuple
+
+        if isinstance(l,list) or isinstance(l,tuple):
+            l = cls._from_tuple(l)
+
+        if isinstance(r,list) or isinstance(r,tuple):
+            r = cls._from_tuple(r)
+
+
+        node = HuffmanNode((0,l), (0,r))
+        return node
 
 
 def huffman_encode(text, pad=False):
     '''
     :param text: text to encode
-    'param boolean pass: padds the text with 0 to make it fit into bytes
     '''
     tree = HuffmanTree.from_text(text)
     result = ''.join([tree[x] for x in text])
