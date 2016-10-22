@@ -25,15 +25,13 @@ class HuffmanNode(object):
 class HuffmanTree(object):
 
     def __init__(self):
-        pass
+        self._code = None
 
     def __repr__(self):
         return self.as_tuple()
 
     def __getitem__(self, key):
-        if not self.code:
-            self.make_code()
-        return self.code[key]
+        return self.symbol_table[key]
 
     def create_tree(self, freq):
         p = queue.PriorityQueue()
@@ -47,8 +45,12 @@ class HuffmanTree(object):
         self.root = p.get()
 
 
-    def make_code(self):
-        self._make_code(self.root)
+    @property
+    def symbol_table(self):
+        if not self._code:
+            self._code = self._make_code(self.root)
+        return self._code
+
 
     # Recursively walk the tree down to the leaves,
     # assigning a code value to each symbol
@@ -126,15 +128,5 @@ class HuffmanTree(object):
 
         node = HuffmanNode((0,l), (0,r))
         return node
-
-
-def huffman_encode(text, pad=False):
-    '''
-    :param text: text to encode
-    '''
-    tree = HuffmanTree.from_text(text)
-    result = ''.join([tree[x] for x in text])
-
-    return tree, result
 
 
