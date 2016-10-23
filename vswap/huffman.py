@@ -28,7 +28,7 @@ class HuffmanTree(object):
         self._code = None
 
     def __repr__(self):
-        return self.as_tuple()
+        return self.as_tuple().__repr__()
 
     def __getitem__(self, key):
         return self.symbol_table[key]
@@ -151,10 +151,48 @@ class HuffmanTree(object):
             if not isinstance(tree_node,HuffmanNode):
                 symbols += tree_node
                 tree_node = self.root[1]
-
             data_pointer += 1
 
+        return symbols
 
+    def decode_bytes(self, data, decode_count=None):
+        '''
+        Decodes bytes encoded in huffman
+        '''
+        data_pointer = 0  # in our data array
+        bit_pointer = 7
+        symbols = []  # Read symbols
+        tree_node = self.root[1]
+
+        get_bit = lambda dp, bp: (data[dp] >> bp) & 0x01
+
+        while data_pointer < len(data) and \
+            (decode_count is None or decode_count > 0):
+            # Get next bit
+            bit = get_bit(data_pointer, bit_pointer)
+
+            # Move left or right
+            if bit == 0:
+                tree_node = tree_node.left[1]
+            else:
+                tree_node = tree_node.right[1]
+
+            # If leaf node then add to symbol table
+            if not isinstance(tree_node,HuffmanNode):
+                symbols.append(tree_node)
+                tree_node = self.root[1]
+                if decode_count:
+                    decode_count -= 1
+            # Move on the bit pointer
+            bit_pointer -= 1
+
+            # If we've rolled over then move on to next byte
+            if bit_pointer < 0:
+                bit_pointer = 7
+                data_pointer += 1
+
+        if decode_count:
+            raise ValueError("Could not decode all data")
 
         return symbols
 

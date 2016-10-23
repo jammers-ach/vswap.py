@@ -2,6 +2,30 @@ import pytest
 from vswap.huffman import HuffmanTree, huffman_encode
 
 
+def _binary_string_to_bytes(text):
+    '''
+    Utility function, pads short bytes with trailing 0s
+    '10101111' => [0xaf]
+    '1' => [0x80] (intermedate 1000000)
+    '''
+    if len(text) % 8 != 0:
+        text += '0' * (8 - len(text) % 8)
+        assert len(text) % 8 == 0
+
+    data = []
+    for i in range(int(len(text)/8)):
+        offset = i*8
+        byte = text[offset:offset+8]
+        data.append(int(byte, 2))
+
+    return bytes(data)
+
+def test_utility_function():
+    assert _binary_string_to_bytes('10101111') == bytes([0xaf])
+    assert _binary_string_to_bytes('1') == bytes([0x80])
+    assert _binary_string_to_bytes('1111111110101111') == bytes([0xff, 0xaf])
+    assert _binary_string_to_bytes('010100110111') == bytes([0x53, 0x70])
+
 def test_tree_from_text():
     tree = HuffmanTree.from_text('abcd')
     tree_tuple= tree.as_tuple()
@@ -63,8 +87,26 @@ def test_decode_from_tree():
         ('110', 'c'),
         ('111', 'd'),
         ('1110', 'da'),
-        ('010100110111', 'abbacd')
+        ('010100110111', 'abbacd'),
     ]
 
     for value, expected in tests:
         assert new_tree.decode_text(value) == expected
+
+        new_encoded = huffman_encode(expected, new_tree)
+        assert new_encoded == value
+
+        value_bytes = _binary_string_to_bytes(value)
+        decoded = ''.join(new_tree.decode_bytes(value_bytes, decode_count=len(expected)))
+        assert decoded == expected
+
+    # These cases contain patterns that leave the decoding
+    # Not on a leaf node
+    failing_tests = [
+        ('11111111', 'dda'),
+        ('01010011', 'abbacd'),
+    ]
+    for value, expected in failing_tests:
+        value_bytes = _binary_string_to_bytes(value)
+        with pytest.raises(ValueError):
+            data = new_tree.decode_bytes(value_bytes, decode_count=len(expected))
