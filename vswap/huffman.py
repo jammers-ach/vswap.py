@@ -129,6 +129,34 @@ class HuffmanTree(object):
         node = HuffmanNode((0,l), (0,r))
         return node
 
+    @classmethod
+    def from_vgadict(cls, nodes):
+        '''
+        Makes a huffman tree from wolf3d vgadict nodes
+        '''
+        root = nodes[254]
+        root_node = cls._from_vgadict(root, nodes)
+        tree = cls()
+        tree.root = (0, root_node)
+
+        return tree
+
+    @classmethod
+    def _from_vgadict(cls, node, nodes):
+
+        if node.type_l == 1:
+            left = cls._from_vgadict(nodes[node.ref_l], nodes)
+        else:
+            left = node.ref_l
+
+        if node.type_r == 1:
+            right = cls._from_vgadict(nodes[node.ref_r], nodes)
+        else:
+            right = node.ref_r
+
+        node = HuffmanNode((0, left), (0, right))
+        return node
+
     #TODO binary as a string, srysly??
     def decode_text(self, text):
         '''
