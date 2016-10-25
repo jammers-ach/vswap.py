@@ -71,7 +71,6 @@ def load_chunks(gamedir, tree, offsets):
         data_size = b-a
         read_loc.append((a, data_size))
 
-
     fmt = '<L'
     datasize = struct.calcsize(fmt)
 
@@ -85,6 +84,7 @@ def load_chunks(gamedir, tree, offsets):
 
             data = tree.decode_bytes(data, decompressed_size)
             chunks.append(data)
+            print(offset, decompressed_size, compressed_size, len(data))
 
     return chunks
 
@@ -98,5 +98,9 @@ if __name__ == '__main__':
         tree = load_dict(gamedir)
         header = load_head(gamedir)
         chunks = load_chunks(gamedir, tree, header)
+
+        for i in range(130, 149):
+            print('------{}------'.format(i))
+            print(str(bytes(chunks[i]), 'koi8-r'))
 
         # print(tree)

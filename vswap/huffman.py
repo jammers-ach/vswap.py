@@ -219,8 +219,10 @@ class HuffmanTree(object):
                 bit_pointer = 7
                 data_pointer += 1
 
-        if decode_count:
-            raise ValueError("Could not decode all data")
+        # if decode_count and decode_count != len(symbols):
+            # raise ValueError("Could not decode all data read {}, needed {}".format(
+                # len(symbols), len(symbols) + decode_count
+            # ))
 
         return symbols
 
