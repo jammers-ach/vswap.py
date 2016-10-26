@@ -6,6 +6,7 @@ import os
 from collections import namedtuple
 from vswap.huffman import HuffmanTree
 from itertools import tee, chain
+from vswap.maps import print_map
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -101,6 +102,9 @@ if __name__ == '__main__':
 
         for i in range(130, 149):
             print('------{}------'.format(i))
-            print(str(bytes(chunks[i]), 'koi8-r'))
+            try:
+                print_map(chunks[i], 64, 64)
+            except:
+                print('')
 
         # print(tree)

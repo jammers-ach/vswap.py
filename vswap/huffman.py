@@ -199,7 +199,7 @@ class HuffmanTree(object):
                  # len(symbols), len(symbols) + decode_count
              # ))
 
-        return symbols
+        return bytes(symbols)
 
 
 

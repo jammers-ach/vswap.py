@@ -89,7 +89,6 @@ def test_decode_from_tree(value, expected):
     assert new_encoded == value
 
     value_bytes = _binary_string_to_bytes(value)
-    print(value_bytes)
     decoded = ''.join(new_tree.decode_bytes(value_bytes, decode_count=len(expected)))
     assert decoded == expected
 
