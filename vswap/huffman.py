@@ -157,38 +157,13 @@ class HuffmanTree(object):
         node = HuffmanNode((0, left), (0, right))
         return node
 
-    #TODO binary as a string, srysly??
-    def decode_text(self, text):
-        '''
-        decodes a binary text string
-        :param string text: a string to decode e.g. '010101110'
-        '''
-        data_pointer = 0
-        symbols = ''
-        tree_node = self.root[1]
-        while data_pointer < len(text):
-            if text[data_pointer] == '0':
-                tree_node = tree_node.left[1]
-            elif text[data_pointer] == '1':
-                tree_node = tree_node.right[1]
-            else:
-                raise ValueError('Only expected "0" or "1" in data, got {}'.format(
-                    text[data_pointer]
-                ))
-
-            if not isinstance(tree_node,HuffmanNode):
-                symbols += tree_node
-                tree_node = self.root[1]
-            data_pointer += 1
-
-        return symbols
 
     def decode_bytes(self, data, decode_count=None):
         '''
         Decodes bytes encoded in huffman
         '''
         data_pointer = 0  # in our data array
-        bit_pointer = 7
+        bit_pointer = 0
         symbols = []  # Read symbols
         tree_node = self.root[1]
 
@@ -212,17 +187,17 @@ class HuffmanTree(object):
                 if decode_count:
                     decode_count -= 1
             # Move on the bit pointer
-            bit_pointer -= 1
+            bit_pointer += 1
 
             # If we've rolled over then move on to next byte
-            if bit_pointer < 0:
-                bit_pointer = 7
+            if bit_pointer > 7:
+                bit_pointer = 0
                 data_pointer += 1
 
         # if decode_count and decode_count != len(symbols):
-            # raise ValueError("Could not decode all data read {}, needed {}".format(
-                # len(symbols), len(symbols) + decode_count
-            # ))
+             # raise ValueError("Could not decode all data read {}, needed {}".format(
+                 # len(symbols), len(symbols) + decode_count
+             # ))
 
         return symbols
 

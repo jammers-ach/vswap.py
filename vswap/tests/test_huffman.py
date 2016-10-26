@@ -5,8 +5,9 @@ from vswap.huffman import HuffmanTree, huffman_encode
 def _binary_string_to_bytes(text):
     '''
     Utility function, pads short bytes with trailing 0s
-    '10101111' => [0xaf]
-    '1' => [0x80] (intermedate 1000000)
+    and returns a byte
+    '11110101' => [0xaf]
+    '1' => [0x01] (intermedate 0000001)
     '''
     if len(text) % 8 != 0:
         text += '0' * (8 - len(text) % 8)
@@ -16,15 +17,14 @@ def _binary_string_to_bytes(text):
     for i in range(int(len(text)/8)):
         offset = i*8
         byte = text[offset:offset+8]
-        data.append(int(byte, 2))
+        data.append(int(byte[::-1], 2))
 
     return bytes(data)
 
 def test_utility_function():
-    assert _binary_string_to_bytes('10101111') == bytes([0xaf])
-    assert _binary_string_to_bytes('1') == bytes([0x80])
-    assert _binary_string_to_bytes('1111111110101111') == bytes([0xff, 0xaf])
-    assert _binary_string_to_bytes('010100110111') == bytes([0x53, 0x70])
+    assert _binary_string_to_bytes('10101111'[::-1]) == bytes([0xaf])
+    assert _binary_string_to_bytes('1'[::-1]) == bytes([0x01])
+    assert _binary_string_to_bytes('1111111111110101') == bytes([0xff, 0xaf])
 
 def test_tree_from_text():
     tree = HuffmanTree.from_text('abcd')
@@ -72,33 +72,26 @@ def test_tree_from_tuple2():
     assert result == '010110111'
 
 
-def test_decode_from_tree():
+@pytest.mark.parametrize("value, expected", [
+    ('0', 'a'),
+    ('10', 'b'),
+    ('110', 'c'),
+    ('111', 'd'),
+    ('1110', 'da'),
+    ('010100110111', 'abbacd'),
+])
+def test_decode_from_tree(value, expected):
     tree = ['a', ['b', ['c', 'd']]]
     new_tree = HuffmanTree.from_tuple(tree)
     assert tree == new_tree.as_tuple()
 
-    #Check the decode_text doesn't work with crappy data
-    with pytest.raises(ValueError):
-        new_tree.decode_text('0101AA')
+    new_encoded = huffman_encode(expected, new_tree)
+    assert new_encoded == value
 
-    tests = [
-        ('0', 'a'),
-        ('10', 'b'),
-        ('110', 'c'),
-        ('111', 'd'),
-        ('1110', 'da'),
-        ('010100110111', 'abbacd'),
-    ]
-
-    for value, expected in tests:
-        assert new_tree.decode_text(value) == expected
-
-        new_encoded = huffman_encode(expected, new_tree)
-        assert new_encoded == value
-
-        value_bytes = _binary_string_to_bytes(value)
-        decoded = ''.join(new_tree.decode_bytes(value_bytes, decode_count=len(expected)))
-        assert decoded == expected
+    value_bytes = _binary_string_to_bytes(value)
+    print(value_bytes)
+    decoded = ''.join(new_tree.decode_bytes(value_bytes, decode_count=len(expected)))
+    assert decoded == expected
 
 
 
