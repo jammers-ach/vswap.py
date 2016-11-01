@@ -3,7 +3,7 @@ import sys
 import pathlib
 import struct
 
-from vswap.textures import Wall
+from vswap.textures import Wall, Sprite
 # Made possible thanks to:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VSW.html
 
@@ -54,6 +54,8 @@ def load_sprite_chunks(gamedir, chunk_offsets):
 
             if c_type == 'wall':
                 chunks.append(Wall.from_bytes(data))
+            elif c_type == 'sprite':
+                chunks.append(Sprite.from_bytes(data))
             else:
                 chunks.append([c_type, data])
     return chunks
@@ -67,4 +69,7 @@ if __name__ == '__main__':
         data_offsets = load_swap_chunk_offsets(gamedir)
         graphic_chunks = load_sprite_chunks(gamedir, data_offsets)
 
-        graphic_chunks[0]._print()
+        for i in graphic_chunks:
+            if isinstance(i, Sprite):
+                i._print()
+                break

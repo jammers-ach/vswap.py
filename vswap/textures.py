@@ -1,12 +1,11 @@
 import numpy as np
 
-class Wall:
+class Texture:
     size = (64, 64)
 
     def __init__(self, texture):
         assert texture.shape == self.size
         self.texture = texture
-
 
     def _print(self):
         '''Quick debug print of this wall'''
@@ -16,6 +15,9 @@ class Wall:
 
             print('')
 
+
+class Wall(Texture):
+    size = (64, 64)
 
     @classmethod
     def from_bytes(cls, data):
@@ -30,3 +32,11 @@ class Wall:
 
         wall = cls(data)
         return wall
+
+
+class Sprite(Texture):
+
+    @classmethod
+    def from_bytes(cls, data):
+        data = np.zeros(cls.size)
+        return cls(data)
