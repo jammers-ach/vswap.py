@@ -1,94 +1,62 @@
-# Quick demo of loading wolf3d map data
+
 import sys
 import pathlib
 import struct
-import os
-from collections import namedtuple
-from vswap.huffman import HuffmanTree
-from itertools import tee, chain
-from vswap.maps import print_map
 
-def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-# All made possible with the help of:
-# http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
-def load_head(gamedir):
-    vgadict = gamedir / 'VGAHEAD.WL6'
-
-    fmt = '<BBB'
-    datasize = struct.calcsize(fmt)
-    HeaderNode = namedtuple('HeaderNode', ['b1','b2','b3'])
-    offsets = []
-
-    with vgadict.open('rb') as f:
-        read_bytes = f.read(datasize)
-        while read_bytes:
-            data = struct.unpack(fmt, read_bytes)
-            offset = data[0] + (data[1] << 8) + (data[2] << 16)
-            offsets.append(offset)
-
-            read_bytes = f.read(datasize)
-
-    for a, b in pairwise(offsets):
-        assert b > a, 'Offsets are decreasing'
-
-    return offsets
-
-def load_dict(gamedir):
-    vgadict = gamedir / 'VGADICT.WL6'
-
-    fmt = '<BBBB'
-    datasize = struct.calcsize(fmt)
-    DictNode = namedtuple('DictNode', ['ref_l', 'type_l', 'ref_r', 'type_r'])
-
-    # Read in all the nodes
-    nodes = []
-    node_index = 0
-    with vgadict.open('rb') as f:
-        read_bytes = f.read(datasize)
-        while read_bytes:
-            data = struct.unpack(fmt, read_bytes)
-            node = DictNode(*data)
-            nodes.append(node)
-            node_index += 1
-            read_bytes = f.read(datasize)
-
-    # Make huffman tree
-    tree = HuffmanTree.from_vgadict(nodes)
-    return tree
+from vswap.textures import Wall
+# Made possible thanks to:
+# http://gaarabis.free.fr/_sites/specs/files/wlspec_VSW.html
 
 
-def load_chunks(gamedir, tree, offsets):
-    vgagraph = gamedir / 'VGAGRAPH.WL6'
+def load_swap_chunk_offsets(gamedir):
+    '''Gets location and size and type of each sprite chunk,
+    yeilds "wall"/"sprite"/"sound", chunk_size, chunk_offset'''
+    vswap = gamedir / 'VSWAP.WL6'
 
-    # Loop through the offsets pairwise and
-    # calculate the size of the compressed data
-    read_loc = []
-    for a, b in pairwise(offsets):
-        data_size = b-a
-        read_loc.append((a, data_size))
+    # first 3 words are: chunk
+    header_fmt = '<HHH'
 
-    fmt = '<L'
-    datasize = struct.calcsize(fmt)
+    with vswap.open('rb') as f:
+        f.seek(0)
+        data = f.read(struct.calcsize(header_fmt))
+        nchunks, first_sprite, first_sound = \
+            struct.unpack(header_fmt, data)
+
+        chunk_list_fmt = '<' + 'L' * nchunks
+        chunk_length_fmt = '<' + 'H' * nchunks
+        data = f.read(struct.calcsize(chunk_list_fmt))
+        chunk_offsets = struct.unpack(chunk_list_fmt, data)
+
+        data = f.read(struct.calcsize(chunk_length_fmt))
+        chunk_lengths = struct.unpack(chunk_length_fmt, data)
+
+    chunks_info = zip(chunk_offsets, chunk_lengths)
+
+    for i, d in enumerate(chunks_info):
+        if i < first_sprite:
+            c_type = 'wall'
+        elif i < first_sound:
+            c_type = 'sprite'
+        else:
+            c_type = 'sound'
+
+        offset, length = d
+        yield c_type, length, offset
+
+def load_sprite_chunks(gamedir, chunk_offsets):
+    vswap = gamedir / 'VSWAP.WL6'
 
     chunks = []
-
-    with vgagraph.open('rb') as f:
-        for offset, compressed_size in read_loc:
+    with vswap.open('rb') as f:
+        for c_type, length, offset in chunk_offsets:
             f.seek(offset)
-            decompressed_size = struct.unpack(fmt, f.read(datasize))[0]
-            data = f.read(compressed_size)
+            data = f.read(length)
 
-            data = tree.decode_bytes(data, decompressed_size)
-            chunks.append(data)
-            print(offset, len(chunks), compressed_size, decompressed_size, len(data))
-
+            if c_type == 'wall':
+                chunks.append(Wall.from_bytes(data))
+            else:
+                chunks.append([c_type, data])
     return chunks
-
 
 if __name__ == '__main__':
 
@@ -96,7 +64,7 @@ if __name__ == '__main__':
         print("sprites.py GAMEDIR")
     else:
         gamedir = pathlib.Path(sys.argv[1])
-        tree = load_dict(gamedir)
-        header = load_head(gamedir)
-        chunks = load_chunks(gamedir, tree, header)
+        data_offsets = load_swap_chunk_offsets(gamedir)
+        graphic_chunks = load_sprite_chunks(gamedir, data_offsets)
 
+        graphic_chunks[0]._print()

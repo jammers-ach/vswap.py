@@ -5,6 +5,7 @@ class PictTable(Chunk):
     fmt = '<HH'
     fields = ['width', 'height']
 
+
 class Chunk:
     '''Generic data chunk
     subclass this with a fmt and fields'''
