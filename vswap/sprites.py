@@ -85,7 +85,7 @@ def load_chunks(gamedir, tree, offsets):
 
             data = tree.decode_bytes(data, decompressed_size)
             chunks.append(data)
-            print(offset, decompressed_size, compressed_size, len(data))
+            print(offset, len(chunks), compressed_size, decompressed_size, len(data))
 
     return chunks
 
@@ -100,11 +100,3 @@ if __name__ == '__main__':
         header = load_head(gamedir)
         chunks = load_chunks(gamedir, tree, header)
 
-        for i in range(130, 149):
-            print('------{}------'.format(i))
-            try:
-                print_map(chunks[i], 64, 64)
-            except:
-                print('')
-
-        # print(tree)
