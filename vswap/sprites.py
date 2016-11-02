@@ -69,6 +69,7 @@ if __name__ == '__main__':
         data_offsets = load_swap_chunk_offsets(gamedir)
         graphic_chunks = load_sprite_chunks(gamedir, data_offsets)
 
+        # graphic_chunks[50]._print()
         for i in graphic_chunks:
             if isinstance(i, Sprite):
                 i._print()
