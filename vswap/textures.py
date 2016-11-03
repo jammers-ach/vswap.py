@@ -15,7 +15,7 @@ class Texture:
         '''Quick debug print of this wall'''
         for i in range(self.size[0]):
             for j in range(self.size[1]):
-                print("{:02X}".format(int(self.texture[i][j]) >> 2), end='')
+                print("{:02X}".format(int(self.texture[i][j])), end='')
 
             print('')
 
@@ -31,12 +31,11 @@ class Wall(Texture):
         # bytes to int
         data = np.array([int(i) for i in data])
 
-
         # reshape
         data = data.reshape(cls.size)
+        data = np.rot90(data, 3)
 
-        wall = cls(data)
-        return wall
+        return cls(data)
 
 
 class Sprite(Texture):
@@ -46,25 +45,27 @@ class Sprite(Texture):
 
         texture = np.zeros(cls.size)
 
+        # First two words are the start and end column
         first_column = readword(data, 0)
         last_column = readword(data, 2)
         num_columns = last_column - first_column + 1
 
         post_offsets = [readword(data, (i*2) + 4) for i in range(num_columns)]
 
-        for post_offset in post_offsets:
-            post_stop = readword(data, post_offset)
-            post_start = readword(data, post_offset+4)
-            print(post_stop, post_start)
+        # Location of the pixel pool
+        pxpl = (num_columns * 2) + 4
+
+        for col,post_offset in enumerate(post_offsets):
+            post_stop = readword(data, post_offset) // 2
+            post_start = readword(data, post_offset+4) // 2
 
             if(post_stop < post_start):
                 continue
 
             for i in range(post_start, post_stop):
-                print(data[i], end='')
-            print('')
+                texture[first_column + col, i] = data[pxpl]
+                pxpl += 1
 
-        print('---')
-        print(post_offsets)
 
+        texture = np.rot90(texture, 3)
         return cls(texture)

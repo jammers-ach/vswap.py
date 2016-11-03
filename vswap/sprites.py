@@ -70,7 +70,8 @@ if __name__ == '__main__':
         graphic_chunks = load_sprite_chunks(gamedir, data_offsets)
 
         # graphic_chunks[50]._print()
+        c = 0
         for i in graphic_chunks:
             if isinstance(i, Sprite):
                 i._print()
-                break
+                print('----')
