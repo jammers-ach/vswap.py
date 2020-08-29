@@ -73,18 +73,25 @@ class Sprite(Texture):
         first_column = readword(data, 0)
         last_column = readword(data, 2)
         num_columns = last_column - first_column + 1
+        pxpl_start = (num_columns * 2) + 4
 
         post_offsets = [readword(data, (i*2) + 4) for i in range(num_columns)]
 
-        # Location of the pixel pool
-        pxpl = (num_columns * 2) + 4
 
         for col,post_offset in enumerate(post_offsets):
-            post_stop = readword(data, post_offset) // 2
-            post_start = readword(data, post_offset+4) // 2
+            line_cmd1 = readword(data, post_offset)
+            line_cmd2 = readword(data, post_offset+2)
+            line_cmd3 = readword(data, post_offset+4)
 
-            if(post_stop < post_start):
-                continue
+            post_stop = line_cmd1 // 2
+            post_start = line_cmd3 // 2
+            pxpl_offset = post_start + line_cmd2
+
+            if pxpl_offset < 0xfff:
+                pxpl = pxpl_offset
+            else:
+                pxpl = pxpl_start
+
 
             for i in range(post_start, post_stop):
                 texture[first_column + col, i] = data[pxpl]
