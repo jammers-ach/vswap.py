@@ -73,7 +73,6 @@ class Sprite(Texture):
         first_column = readword(data, 0)
         last_column = readword(data, 2)
         num_columns = last_column - first_column + 1
-        pxpl_start = (num_columns * 2) + 4
 
         post_offsets = [readword(data, (i*2) + 4) for i in range(num_columns)]
 
