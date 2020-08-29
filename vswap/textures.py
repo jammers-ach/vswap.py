@@ -1,6 +1,9 @@
 import numpy as np
 import struct
 
+from PIL import Image
+
+
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
 readlong = lambda d,p: struct.unpack('<L', d[p:p+4])[0]
 
@@ -11,14 +14,30 @@ class Texture:
         assert texture.shape == self.size
         self.texture = texture
 
-    def _print(self):
-        '''Quick debug print of this wall'''
+    def __str__(self):
+        '''Quick debug print of this Texture'''
+        render = ''
         for i in range(self.size[0]):
             for j in range(self.size[1]):
-                print("{:02X}".format(int(self.texture[i][j])), end='')
+                render += "{:02X}".format(int(self.texture[i][j]))
+            render += "\n"
+        return render
 
-            print('')
+    def _pallet_convert(self, pallet):
+        new_texture = np.empty((self.size[0], self.size[1], 3), dtype='uint8')
+        t = lambda x: pallet[int(x)]
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                txt = t(self.texture[i][j])
+                new_texture[i][j][0] = txt[0]
+                new_texture[i][j][1] = txt[1]
+                new_texture[i][j][2] = txt[2]
+        return new_texture
 
+    def output(self, filename, pallet):
+        '''Write this '''
+        result = Image.fromarray(self._pallet_convert(pallet))
+        result.save(filename)
 
 class Wall(Texture):
     size = (64, 64)

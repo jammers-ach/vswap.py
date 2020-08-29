@@ -1,6 +1,3 @@
-
-import sys
-import pathlib
 import struct
 
 from vswap.textures import Wall, Sprite
@@ -8,10 +5,10 @@ from vswap.textures import Wall, Sprite
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VSW.html
 
 
-def load_swap_chunk_offsets(gamedir):
+def load_swap_chunk_offsets(gamedir, vswapfile):
     '''Gets location and size and type of each sprite chunk,
     yeilds "wall"/"sprite"/"sound", chunk_size, chunk_offset'''
-    vswap = gamedir / 'VSWAP.WL6'
+    vswap = gamedir / vswapfile
 
     # first 3 words are: chunk
     header_fmt = '<HHH'
@@ -43,8 +40,8 @@ def load_swap_chunk_offsets(gamedir):
         offset, length = d
         yield c_type, length, offset
 
-def load_sprite_chunks(gamedir, chunk_offsets):
-    vswap = gamedir / 'VSWAP.WL6'
+def load_sprite_chunks(gamedir, swapfile, chunk_offsets):
+    vswap = gamedir / swapfile
 
     chunks = []
     with vswap.open('rb') as f:
@@ -60,18 +57,3 @@ def load_sprite_chunks(gamedir, chunk_offsets):
                 chunks.append([c_type, data])
     return chunks
 
-if __name__ == '__main__':
-
-    if len(sys.argv) < 2:
-        print("sprites.py GAMEDIR")
-    else:
-        gamedir = pathlib.Path(sys.argv[1])
-        data_offsets = load_swap_chunk_offsets(gamedir)
-        graphic_chunks = load_sprite_chunks(gamedir, data_offsets)
-
-        # graphic_chunks[50]._print()
-        c = 0
-        for i in graphic_chunks:
-            if isinstance(i, Sprite):
-                i._print()
-                print('----')
