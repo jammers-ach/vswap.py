@@ -1,6 +1,7 @@
 import argparse
 import os
 import pathlib
+import logging
 
 from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
 from vswap.pallets import wolf3d_pallet
@@ -41,6 +42,6 @@ def run():
     extract(args.gamedir, args.target)
 
 if __name__ == '__main__':
-
+    logging.basicConfig()
     run()
 

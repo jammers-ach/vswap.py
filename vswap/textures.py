@@ -1,7 +1,11 @@
 import numpy as np
 import struct
+import logging
 
 from PIL import Image
+
+
+logger = logging.getLogger(name=__name__)
 
 
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
@@ -36,7 +40,8 @@ class Texture:
 
     def output(self, filename, pallet):
         '''Write this '''
-        result = Image.fromarray(self._pallet_convert(pallet))
+        logger.info("writing %s", filename)
+        result = Image.fromarray(self._pallet_convert(pallet), mode='RGB')
         result.save(filename)
 
 class Wall(Texture):
