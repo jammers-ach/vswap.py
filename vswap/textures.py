@@ -73,29 +73,29 @@ class Sprite(Texture):
         first_column = readword(data, 0)
         last_column = readword(data, 2)
         num_columns = last_column - first_column + 1
-
         post_offsets = [readword(data, (i*2) + 4) for i in range(num_columns)]
 
-
         for col,post_offset in enumerate(post_offsets):
-            line_cmd1 = readword(data, post_offset)
-            line_cmd2 = readword(data, post_offset+2)
-            line_cmd3 = readword(data, post_offset+4)
 
-            post_stop = line_cmd1 // 2
-            post_start = line_cmd3 // 2
-            pxpl_offset = post_start + line_cmd2
+            while True:
+                line_cmd1 = readword(data, post_offset)
+                if line_cmd1 == 0:
+                    break
+                line_cmd2 = readword(data, post_offset+2)
+                line_cmd3 = readword(data, post_offset+4)
+                post_offset += 6
+                print(col, line_cmd1, line_cmd2, line_cmd3)
 
-            if pxpl_offset < 0xfff:
+                post_stop = line_cmd1 // 2
+                post_start = line_cmd3 // 2
+                pxpl_offset = post_start + (line_cmd2)
                 pxpl = pxpl_offset
-            else:
-                pxpl = pxpl_start
+                if pxpl_offset >= len(data):
+                    break
 
-
-            for i in range(post_start, post_stop):
-                texture[first_column + col, i] = data[pxpl]
-                pxpl += 1
-
+                for i in range(post_start, post_stop):
+                    texture[first_column + col, i] = data[pxpl]
+                    pxpl += 1
 
         texture = np.rot90(texture, 3)
         return cls(texture)

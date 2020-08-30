@@ -57,3 +57,32 @@ def load_sprite_chunks(gamedir, swapfile, chunk_offsets):
                 chunks.append([c_type, data])
     return chunks
 
+# This was used when debugging sprite extraction
+# left if needed
+# if __name__ == '__main__':
+    # from vswap.pallets import wolf3d_pallet
+    # from vswap.textures import Sprite
+    # import pathlib
+    # gamedir = 'assets/wolf3d'
+    # swapfile = 'VSWAP.WL6'
+    # pallet = wolf3d_pallet
+    # gamedir = pathlib.Path(gamedir)
+
+    # data_offsets = load_swap_chunk_offsets(gamedir, swapfile)
+
+    # vswap = gamedir / swapfile
+
+    # target = 4
+    # count = 0
+    # with vswap.open('rb') as f:
+        # for c_type, length, offset in data_offsets:
+            # f.seek(offset)
+            # data = f.read(length)
+            # print(c_type)
+            # if c_type == 'sprite':
+                # count += 1
+                # if count == target:
+                    # result = Sprite.from_bytes(data)
+                    # print(result)
+                    # result.output("./tmp.png", pallet)
+                    # break
