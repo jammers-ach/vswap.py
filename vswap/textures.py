@@ -9,6 +9,7 @@ logger = logging.getLogger(name=__name__)
 
 
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+readsignedword = lambda d,p: struct.unpack('<h', d[p:p+2])[0]
 readlong = lambda d,p: struct.unpack('<L', d[p:p+4])[0]
 
 class Texture:
@@ -81,17 +82,15 @@ class Sprite(Texture):
                 line_cmd1 = readword(data, post_offset)
                 if line_cmd1 == 0:
                     break
-                line_cmd2 = readword(data, post_offset+2)
+                line_cmd2 = readsignedword(data, post_offset+2)
                 line_cmd3 = readword(data, post_offset+4)
                 post_offset += 6
-                print(col, line_cmd1, line_cmd2, line_cmd3)
 
                 post_stop = line_cmd1 // 2
                 post_start = line_cmd3 // 2
+
                 pxpl_offset = post_start + (line_cmd2)
                 pxpl = pxpl_offset
-                if pxpl_offset >= len(data):
-                    break
 
                 for i in range(post_start, post_stop):
                     texture[first_column + col, i] = data[pxpl]
