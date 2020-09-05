@@ -19,8 +19,9 @@ readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
 # All made possible with the help of:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
 # http://gaarabis.free.fr/_sites/specs/wlspec_index.html
-def load_head(gamedir):
-    vgadict = gamedir / 'VGAHEAD.WL6'
+def load_head(gamedir, vgahead):
+
+    vgadict = gamedir / vgahead
 
     fmt = '<BBB'
     datasize = struct.calcsize(fmt)
@@ -41,8 +42,8 @@ def load_head(gamedir):
 
     return offsets
 
-def load_dict(gamedir):
-    vgadict = gamedir / 'VGADICT.WL6'
+def load_dict(gamedir, vgadict_file):
+    vgadict = gamedir / vgadict_file
 
     fmt = '<BBBB'
     datasize = struct.calcsize(fmt)
@@ -65,8 +66,8 @@ def load_dict(gamedir):
     return tree
 
 
-def load_chunks(gamedir, tree, offsets):
-    vgagraph = gamedir / 'VGAGRAPH.WL6'
+def load_chunks(gamedir, graphfile, tree, offsets):
+    vgagraph = gamedir / graphfile
 
     # Loop through the offsets pairwise and
     # calculate the size of the compressed data
@@ -93,13 +94,11 @@ def load_chunks(gamedir, tree, offsets):
 def extract_images(chunk):
     # chunk 0 contains info about the image chunks
     total_images = len(chunk[0])/4
-    print(total_images)
     images = []
     for i in range(0, len(chunk[0]), 4):
         chunk_id = int(i/4)
         x = readword(chunk[0], i)
         y = readword(chunk[0], i+2)
-        print("chunk {} is {}x{}".format(i, x, y))
         images.append(Graphic.from_chunk(chunk[chunk_id+3], x,y))
 
     return images
