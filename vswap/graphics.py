@@ -5,7 +5,8 @@ import os
 from collections import namedtuple
 from vswap.huffman import HuffmanTree
 from itertools import tee, chain
-from vswap.maps import print_map
+
+from vswap.textures import Graphic
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -13,8 +14,11 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
+readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+
 # All made possible with the help of:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
+# http://gaarabis.free.fr/_sites/specs/wlspec_index.html
 def load_head(gamedir):
     vgadict = gamedir / 'VGAHEAD.WL6'
 
@@ -84,10 +88,21 @@ def load_chunks(gamedir, tree, offsets):
 
             data = tree.decode_bytes(data, decompressed_size)
             chunks.append(data)
-            print(offset, len(chunks), compressed_size, decompressed_size, len(data))
-
     return chunks
 
+def extract_images(chunk):
+    # chunk 0 contains info about the image chunks
+    total_images = len(chunk[0])/4
+    print(total_images)
+    images = []
+    for i in range(0, len(chunk[0]), 4):
+        chunk_id = int(i/4)
+        x = readword(chunk[0], i)
+        y = readword(chunk[0], i+2)
+        print("chunk {} is {}x{}".format(i, x, y))
+        images.append(Graphic.from_chunk(chunk[chunk_id+3], x,y))
+
+    return images
 
 if __name__ == '__main__':
 
@@ -98,4 +113,10 @@ if __name__ == '__main__':
         tree = load_dict(gamedir)
         header = load_head(gamedir)
         chunks = load_chunks(gamedir, tree, header)
+        images = extract_images(chunks)
+        from vswap.pallets import wolf3d_pallet
+        for i, image in enumerate(images):
+            image.output("out/graphics{}.png".format(i), wolf3d_pallet)
+
+
 
