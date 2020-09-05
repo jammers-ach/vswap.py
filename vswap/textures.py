@@ -69,6 +69,7 @@ class Graphic(Texture):
 
                     new_texture[dst_x][y] = data[int(src_pxl)]
         texture = np.rot90(new_texture, 3)
+        texture = np.flip(texture, 1)
         return cls(texture)
 
 
@@ -87,6 +88,7 @@ class Wall(Texture):
         # reshape
         data = data.reshape(cls.size)
         data = np.rot90(data, 3)
+        data = np.flip(data, 1)
 
         return cls(data)
 
@@ -125,4 +127,5 @@ class Sprite(Texture):
                     pxpl += 1
 
         texture = np.rot90(texture, 3)
+        texture = np.flip(texture, 1)
         return cls(texture)
