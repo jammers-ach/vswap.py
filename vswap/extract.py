@@ -5,6 +5,8 @@ import logging
 
 from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
 from vswap.pallets import wolf3d_pallet
+from vswap.textures import Wall, Sprite
+from vswap.sounds import Sound
 
 
 def extract(gamedir, target):
@@ -15,10 +17,20 @@ def extract(gamedir, target):
     target = pathlib.Path(target)
 
     data_offsets = load_swap_chunk_offsets(gamedir, swapfile)
-    graphic_chunks = load_sprite_chunks(gamedir, swapfile, data_offsets)
-    for i, chunk in enumerate(graphic_chunks):
-        filename = "target{:04d}.png".format(i)
-        chunk.output(target / filename, pallet)
+    vswap_chunks = load_sprite_chunks(gamedir, swapfile, data_offsets)
+    wall_count = 0
+    sprite_count = 0
+    sound_count = 0
+
+    for chunk in vswap_chunks:
+        if type(chunk) == Sprite:
+            sprite_count += 1
+            fname = "sprite{:04d}.png".format(sprite_count)
+            chunk.output(target / fname, pallet)
+        if type(chunk) == Wall:
+            wall_count += 1
+            fname = "wall{:04d}.png".format(wall_count)
+            chunk.output(target / fname, pallet)
 
 def run():
     parser = argparse.ArgumentParser(description='Extracts')
