@@ -3,49 +3,12 @@ import os
 import pathlib
 import logging
 
-from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
-from vswap.pallets import wolf3d_pallet
-from vswap.textures import Wall, Sprite, Graphic
-from vswap.sounds import Sound
-from vswap.graphics import load_dict, load_head, load_chunks, extract_images
-
+from games import Wolf3dFull
 
 def extract(gamedir, target):
-    # TODO fornow assume wolf3d
-    swapfile = 'VSWAP.WL6'
-    dictfile = 'VGADICT.WL6'
-    headfile = 'VGAHEAD.WL6'
-    graphfile = 'VGAGRAPH.WL6'
-    pallet = wolf3d_pallet
-    gamedir = pathlib.Path(gamedir)
-    target = pathlib.Path(target)
-
-
-    # load vswap chunks
-    data_offsets = load_swap_chunk_offsets(gamedir, swapfile)
-    vswap_chunks = load_sprite_chunks(gamedir, swapfile, data_offsets)
-    wall_count = 0
-    sprite_count = 0
-    sound_count = 0
-
-    for chunk in vswap_chunks:
-        if type(chunk) == Sprite:
-            sprite_count += 1
-            fname = "sprite{:04d}.png".format(sprite_count)
-            chunk.output(target / fname, pallet)
-        if type(chunk) == Wall:
-            wall_count += 1
-            fname = "wall{:04d}.png".format(wall_count)
-            chunk.output(target / fname, pallet)
-
-    # load graphics chunks
-    tree = load_dict(gamedir, dictfile)
-    header = load_head(gamedir, headfile)
-    chunks = load_chunks(gamedir, graphfile, tree, header)
-    images = extract_images(chunks)
-    for i, image in enumerate(images):
-        fname = "graphics{:04d}.png".format(i)
-        image.output(target / fname, wolf3d_pallet)
+    game = Wolf3dFull(gamedir)
+    game.load_all()
+    game.output(target)
 
 def run():
     parser = argparse.ArgumentParser(description='Extracts')
@@ -60,7 +23,7 @@ def run():
     # check valid dir
     if not os.path.isdir(args.gamedir):
         print("{} is not a directory".format(args.gamedir))
-        retu
+        return
 
     if not os.path.isdir(args.target):
         print("{} is not a directory".format(args.target))
