@@ -8,5 +8,5 @@ setup(name='vswap',
       author_email='jammers@gmail.com',
       url='https://github.com/jammers-ach/vswap.py',
       packages=['vswap',],
-      install_requires=['pytest', 'numpy', 'Pillow']
+      install_requires=['pytest', 'numpy', 'Pillow', 'wave']
      )
