@@ -1,6 +1,7 @@
 import struct
 
 from vswap.textures import Wall, Sprite
+from vswap.sounds import Sound
 # Made possible thanks to:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VSW.html
 
@@ -54,7 +55,7 @@ def load_sprite_chunks(gamedir, swapfile, chunk_offsets):
             elif c_type == 'sprite':
                 chunks.append(Sprite.from_bytes(data))
             else:
-                chunks.append([c_type, data])
+                chunks.append(Sound.from_bytes(data))
     return chunks
 
 # This was used when debugging sprite extraction

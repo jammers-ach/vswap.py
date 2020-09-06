@@ -16,7 +16,7 @@ class Texture:
     size = (64, 64)
 
     def __init__(self, texture):
-        assert texture.shape == self.size
+        assert texture.shape == self.size, "{} expected {}".format(texture.shape, self.size)
         self.texture = texture
 
     def __str__(self):
@@ -45,6 +45,35 @@ class Texture:
         result = Image.fromarray(self._pallet_convert(pallet), mode='RGB')
         result.save(filename)
 
+
+class Graphic(Texture):
+
+    def __init__(self, texture):
+        self.size = texture.shape
+        self.texture = texture
+
+    @classmethod
+    def from_chunk(cls, data, w, h):
+        assert len(data) == (w * h), "wrong image size, expected {} bytes got {}".format((w*h), len(data) )
+
+        # new texture
+        new_texture = np.empty((w,h,1), dtype='uint8')
+
+        #http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html#GUI5
+        for plane in range(4):
+            for y in range(h):
+                for x in range(int(w/4)):
+                    dst_x = (x*4) + plane
+                    src_pxl = x + (int((w*h)/4) * plane)
+                    src_pxl += (y * int(w/4))
+
+                    new_texture[dst_x][y] = data[int(src_pxl)]
+        texture = np.rot90(new_texture, 3)
+        texture = np.flip(texture, 1)
+        return cls(texture)
+
+
+
 class Wall(Texture):
     size = (64, 64)
 
@@ -59,6 +88,7 @@ class Wall(Texture):
         # reshape
         data = data.reshape(cls.size)
         data = np.rot90(data, 3)
+        data = np.flip(data, 1)
 
         return cls(data)
 
@@ -97,4 +127,5 @@ class Sprite(Texture):
                     pxpl += 1
 
         texture = np.rot90(texture, 3)
+        texture = np.flip(texture, 1)
         return cls(texture)

@@ -5,7 +5,8 @@ import os
 from collections import namedtuple
 from vswap.huffman import HuffmanTree
 from itertools import tee, chain
-from vswap.maps import print_map
+
+from vswap.textures import Graphic
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -13,10 +14,14 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
+readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+
 # All made possible with the help of:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
-def load_head(gamedir):
-    vgadict = gamedir / 'VGAHEAD.WL6'
+# http://gaarabis.free.fr/_sites/specs/wlspec_index.html
+def load_head(gamedir, vgahead):
+
+    vgadict = gamedir / vgahead
 
     fmt = '<BBB'
     datasize = struct.calcsize(fmt)
@@ -37,8 +42,8 @@ def load_head(gamedir):
 
     return offsets
 
-def load_dict(gamedir):
-    vgadict = gamedir / 'VGADICT.WL6'
+def load_dict(gamedir, vgadict_file):
+    vgadict = gamedir / vgadict_file
 
     fmt = '<BBBB'
     datasize = struct.calcsize(fmt)
@@ -61,8 +66,8 @@ def load_dict(gamedir):
     return tree
 
 
-def load_chunks(gamedir, tree, offsets):
-    vgagraph = gamedir / 'VGAGRAPH.WL6'
+def load_chunks(gamedir, graphfile, tree, offsets):
+    vgagraph = gamedir / graphfile
 
     # Loop through the offsets pairwise and
     # calculate the size of the compressed data
@@ -81,13 +86,21 @@ def load_chunks(gamedir, tree, offsets):
             f.seek(offset)
             decompressed_size = struct.unpack(fmt, f.read(datasize))[0]
             data = f.read(compressed_size)
-
             data = tree.decode_bytes(data, decompressed_size)
             chunks.append(data)
-            print(offset, len(chunks), compressed_size, decompressed_size, len(data))
-
     return chunks
 
+def extract_images(chunk, graphics_offset=3):
+    # chunk 0 contains info about the image chunks
+    total_images = len(chunk[0])/4
+    images = []
+    for i in range(0, len(chunk[0]), 4):
+        chunk_id = int(i/4)
+        x = readword(chunk[0], i)
+        y = readword(chunk[0], i+2)
+        images.append(Graphic.from_chunk(chunk[chunk_id+graphics_offset], x,y))
+
+    return images
 
 if __name__ == '__main__':
 
@@ -95,7 +108,17 @@ if __name__ == '__main__':
         print("graphics.py GAMEDIR")
     else:
         gamedir = pathlib.Path(sys.argv[1])
-        tree = load_dict(gamedir)
-        header = load_head(gamedir)
-        chunks = load_chunks(gamedir, tree, header)
+        swapfile = 'vswap.bs6'
+        dictfile = 'vgadict.bs6'
+        headfile = 'vgahead.bs6'
+        graphfile = 'vgagraph.bs6'
+        tree = load_dict(gamedir, dictfile)
+        header = load_head(gamedir, headfile)
+        chunks = load_chunks(gamedir, graphfile, tree, header)
+        images = extract_images(chunks, graphics_offset=6)
+        from vswap.pallets import wolf3d_pallet
+        for i, image in enumerate(images):
+            image.output("out/graphics{}.png".format(i), wolf3d_pallet)
+
+
 
