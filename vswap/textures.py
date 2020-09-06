@@ -29,20 +29,21 @@ class Texture:
         return render
 
     def _pallet_convert(self, pallet):
-        new_texture = np.empty((self.size[0], self.size[1], 3), dtype='uint8')
+        new_texture = np.empty((self.size[0], self.size[1], 4), dtype='uint8')
         t = lambda x: pallet[int(x)]
         for i in range(self.size[0]):
             for j in range(self.size[1]):
-                txt = t(self.texture[i][j])
-                new_texture[i][j][0] = txt[0]
-                new_texture[i][j][1] = txt[1]
-                new_texture[i][j][2] = txt[2]
+                r,g,b = t(self.texture[i][j])
+                new_texture[i][j][0] = r
+                new_texture[i][j][1] = g
+                new_texture[i][j][2] = b
+                new_texture[i][j][3] = 0 if self.texture[i][j] == -1 else 255
         return new_texture
 
     def output(self, filename, pallet):
         '''Write this '''
         logger.info("writing %s", filename)
-        result = Image.fromarray(self._pallet_convert(pallet), mode='RGB')
+        result = Image.fromarray(self._pallet_convert(pallet), mode='RGBA')
         result.save(filename)
 
 
@@ -98,7 +99,8 @@ class Sprite(Texture):
     @classmethod
     def from_bytes(cls, data):
 
-        texture = np.zeros(cls.size)
+        # -1 indicates transparrent
+        texture = np.full(cls.size, -1)
 
         # First two words are the start and end column
         first_column = readword(data, 0)
