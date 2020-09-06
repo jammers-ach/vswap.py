@@ -3,10 +3,11 @@ import os
 import pathlib
 import logging
 
-from games import Wolf3dFull
+from games import detect_game
 
 def extract(gamedir, target):
-    game = Wolf3dFull(gamedir)
+    gamecls = detect_game(gamedir)
+    game = gamecls(gamedir)
     game.load_all()
     game.output(target)
 
@@ -32,6 +33,6 @@ def run():
     extract(args.gamedir, args.target)
 
 if __name__ == '__main__':
-    logging.basicConfig()
+    logging.basicConfig(level=logging.INFO)
     run()
 

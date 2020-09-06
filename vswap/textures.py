@@ -54,7 +54,7 @@ class Graphic(Texture):
 
     @classmethod
     def from_chunk(cls, data, w, h):
-        assert len(data) == (w * h), "wrong image size"
+        assert len(data) == (w * h), "wrong image size, expected {} bytes got {}".format((w*h), len(data) )
 
         # new texture
         new_texture = np.empty((w,h,1), dtype='uint8')

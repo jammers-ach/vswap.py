@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
-from vswap.pallets import wolf3d_pallet
+from vswap.pallets import wolf3d_pallet, bstone_pallet
 from vswap.textures import Wall, Sprite
 from vswap.graphics import load_dict, load_head, load_chunks, extract_images
 
@@ -63,7 +63,7 @@ class Wolf3dGame():
         tree = load_dict(self.gamedir, self.dictfile)
         header = load_head(self.gamedir, self.headfile)
         chunks = load_chunks(self.gamedir, self.graphfile, tree, header)
-        self.images = extract_images(chunks)
+        self.images = extract_images(chunks, self.graphics_offset)
 
 
     def output(self, target):
@@ -72,17 +72,14 @@ class Wolf3dGame():
 
         for i, sprite in enumerate(self.sprites):
             fname = "sprite{:04d}.png".format(i)
-            logger.info("Writing {}".format(fname))
             sprite.output(target / fname, self.pallet)
 
         for i, wall in enumerate(self.walls):
             fname = "wall{:04d}.png".format(i)
-            logger.info("Writing {}".format(fname))
             wall.output(target / fname, self.pallet)
 
         for i, image in enumerate(self.images):
             fname = "image{:04d}.png".format(i)
-            logger.info("Writing {}".format(fname))
             image.output(target / fname, self.pallet)
 
 
@@ -92,4 +89,33 @@ class Wolf3dFull(Wolf3dGame):
     dictfile = 'VGADICT.WL6'
     headfile = 'VGAHEAD.WL6'
     graphfile = 'VGAGRAPH.WL6'
+    graphics_offset = 3
+
+
+class BstoneFull(Wolf3dGame):
+    pallet = bstone_pallet
+    swapfile = 'VSWAP.BS6'
+    dictfile = 'VGADICT.BS6'
+    headfile = 'VGAHEAD.BS6'
+    graphfile = 'VGAGRAPH.BS6'
+    graphics_offset = 6
+
+class BstonePlanet(Wolf3dGame):
+    pallet = bstone_pallet
+    swapfile = 'VSWAP.VSI'
+    dictfile = 'VGADICT.VSI'
+    headfile = 'VGAHEAD.VSI'
+    graphfile = 'VGAGRAPH.VSI'
+    graphics_offset = 6
+
+def detect_game(gamedir):
+    gamedir = Path(gamedir)
+    games = [Wolf3dFull, BstoneFull, BstonePlanet]
+    for game in games:
+        fname = game.swapfile
+        if os.path.isfile(gamedir / fname.upper()) or \
+            os.path.isfile(gamedir / fname.lower()):
+            logger.info("Detected {}".format(game))
+            return game
+    raise Exception("No game found in {}".format(gamedir))
 

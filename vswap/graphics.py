@@ -86,12 +86,11 @@ def load_chunks(gamedir, graphfile, tree, offsets):
             f.seek(offset)
             decompressed_size = struct.unpack(fmt, f.read(datasize))[0]
             data = f.read(compressed_size)
-
             data = tree.decode_bytes(data, decompressed_size)
             chunks.append(data)
     return chunks
 
-def extract_images(chunk):
+def extract_images(chunk, graphics_offset=3):
     # chunk 0 contains info about the image chunks
     total_images = len(chunk[0])/4
     images = []
@@ -99,7 +98,7 @@ def extract_images(chunk):
         chunk_id = int(i/4)
         x = readword(chunk[0], i)
         y = readword(chunk[0], i+2)
-        images.append(Graphic.from_chunk(chunk[chunk_id+3], x,y))
+        images.append(Graphic.from_chunk(chunk[chunk_id+graphics_offset], x,y))
 
     return images
 
@@ -109,10 +108,14 @@ if __name__ == '__main__':
         print("graphics.py GAMEDIR")
     else:
         gamedir = pathlib.Path(sys.argv[1])
-        tree = load_dict(gamedir)
-        header = load_head(gamedir)
-        chunks = load_chunks(gamedir, tree, header)
-        images = extract_images(chunks)
+        swapfile = 'vswap.bs6'
+        dictfile = 'vgadict.bs6'
+        headfile = 'vgahead.bs6'
+        graphfile = 'vgagraph.bs6'
+        tree = load_dict(gamedir, dictfile)
+        header = load_head(gamedir, headfile)
+        chunks = load_chunks(gamedir, graphfile, tree, header)
+        images = extract_images(chunks, graphics_offset=6)
         from vswap.pallets import wolf3d_pallet
         for i, image in enumerate(images):
             image.output("out/graphics{}.png".format(i), wolf3d_pallet)
