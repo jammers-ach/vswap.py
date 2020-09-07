@@ -41,7 +41,7 @@ class Texture:
         return new_texture
 
     def output(self, filename, pallet):
-        '''Write this '''
+        '''Write this'''
         logger.info("writing %s", filename)
         result = Image.fromarray(self._pallet_convert(pallet), mode='RGBA')
         result.save(filename)

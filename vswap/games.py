@@ -3,9 +3,10 @@ import os
 
 from pathlib import Path
 
-from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
+from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks, group_sound_chunks
 from vswap.pallets import wolf3d_pallet, bstone_pallet
 from vswap.textures import Wall, Sprite
+from vswap.sounds import Sound
 from vswap.graphics import load_dict, load_head, load_chunks, extract_images
 
 logger = logging.getLogger(name=__name__)
@@ -51,11 +52,14 @@ class Wolf3dGame():
         vswap_chunks = load_sprite_chunks(self.gamedir, self.swapfile, data_offsets)
         self.walls= []
         self.sprites = []
+        self.sounds = []
         for chunk in vswap_chunks:
             if type(chunk) == Sprite:
                 self.sprites.append(chunk)
             if type(chunk) == Wall:
                 self.walls.append(chunk)
+            if type(chunk) == Sound:
+                self.sounds.append(chunk)
 
 
     def load_graphics(self):
@@ -70,6 +74,10 @@ class Wolf3dGame():
         '''output all our assests to a target directory'''
         target = Path(target)
 
+        for i, sound in enumerate(self.sounds):
+            fname = "sound{:04d}.wav".format(i)
+            sound.output(target / fname)
+
         for i, sprite in enumerate(self.sprites):
             fname = "sprite{:04d}.png".format(i)
             sprite.output(target / fname, self.pallet)
@@ -81,6 +89,8 @@ class Wolf3dGame():
         for i, image in enumerate(self.images):
             fname = "image{:04d}.png".format(i)
             image.output(target / fname, self.pallet)
+
+
 
 
 class Wolf3dFull(Wolf3dGame):

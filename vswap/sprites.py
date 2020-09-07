@@ -45,6 +45,7 @@ def load_sprite_chunks(gamedir, swapfile, chunk_offsets):
     vswap = gamedir / swapfile
 
     chunks = []
+    sound_chunks = []
     with vswap.open('rb') as f:
         for c_type, length, offset in chunk_offsets:
             f.seek(offset)
@@ -55,8 +56,26 @@ def load_sprite_chunks(gamedir, swapfile, chunk_offsets):
             elif c_type == 'sprite':
                 chunks.append(Sprite.from_bytes(data))
             else:
-                chunks.append(Sound.from_bytes(data))
+                sound_chunks.append(data)
+
+    for data in group_sound_chunks(sound_chunks):
+        chunks.append(Sound.from_bytes(data))
     return chunks
+
+def group_sound_chunks(chunks):
+    """sounds are stored in chunks
+    a chunk's max size is 4096, if a sound
+    chunk is equal to this then it's part of the next chunk
+    """
+    new_chunks = []
+    last_chunk = bytes()
+    for chunk in chunks:
+        last_chunk += chunk
+        if len(chunk) < 4096:
+            new_chunks.append(last_chunk)
+            last_chunk = bytes()
+    return new_chunks
+
 
 # This was used when debugging sprite extraction
 # left if needed
