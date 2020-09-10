@@ -15,6 +15,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+readbyte = lambda d,p: struct.unpack('<B', d[p:p+1])[0]
 
 # All made possible with the help of:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
@@ -102,6 +103,21 @@ def extract_images(chunk, graphics_offset=3):
 
     return images
 
+
+def load_fonts(chunks, font_offsets):
+    return [load_font(chunks[i]) for i in font_offsets]
+
+def load_font(chunk, num_fonts=256):
+    height = readword(chunk, 0)
+    print(height)
+    offsets = [readword(chunk, 1+(2*i)) for i in range(num_fonts)]
+    print(offsets)
+    widths = [readbyte(chunk, (2*256)+i) for i in range(num_fonts)]
+    print(widths)
+    for off, width in zip(offsets, widths):
+        glyph = [readbyte(chunk, off + i) for i in range(width*height)]
+        print(glyph)
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
@@ -115,10 +131,7 @@ if __name__ == '__main__':
         tree = load_dict(gamedir, dictfile)
         header = load_head(gamedir, headfile)
         chunks = load_chunks(gamedir, graphfile, tree, header)
-        images = extract_images(chunks, graphics_offset=6)
-        from vswap.pallets import wolf3d_pallet
-        for i, image in enumerate(images):
-            image.output("out/graphics{}.png".format(i), wolf3d_pallet)
+        fonts = load_fonts(chunks, [1,2])
 
 
 
