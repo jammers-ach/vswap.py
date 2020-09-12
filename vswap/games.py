@@ -7,7 +7,7 @@ from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks, group_sou
 from vswap.pallets import wolf3d_pallet, bstone_pallet
 from vswap.textures import Wall, Sprite
 from vswap.sounds import Sound
-from vswap.graphics import load_dict, load_head, load_chunks, extract_images
+from vswap.graphics import load_dict, load_head, load_chunks, extract_images, load_fonts
 
 logger = logging.getLogger(name=__name__)
 
@@ -68,6 +68,8 @@ class Wolf3dGame():
         header = load_head(self.gamedir, self.headfile)
         chunks = load_chunks(self.gamedir, self.graphfile, tree, header)
         self.images = extract_images(chunks, self.graphics_offset)
+        self.fonts = load_fonts(chunks, self.font_chunks)
+
 
 
     def output(self, target):
@@ -90,6 +92,12 @@ class Wolf3dGame():
             fname = "image{:04d}.png".format(i)
             image.output(target / fname, self.pallet)
 
+        for i, font in enumerate(self.fonts):
+            for j, glyph in enumerate(font):
+                fname = "font-{}-{:03d}.png".format(i+1,j)
+                glyph.output(target / fname, self.pallet)
+
+
 
 
 
@@ -100,6 +108,7 @@ class Wolf3dFull(Wolf3dGame):
     headfile = 'VGAHEAD.WL6'
     graphfile = 'VGAGRAPH.WL6'
     graphics_offset = 3
+    font_chunks = [1,2]
 
 
 class BstoneFull(Wolf3dGame):
@@ -109,6 +118,7 @@ class BstoneFull(Wolf3dGame):
     headfile = 'VGAHEAD.BS6'
     graphfile = 'VGAGRAPH.BS6'
     graphics_offset = 6
+    font_chunks = [1,2,3,4,5]
 
 class BstonePlanet(Wolf3dGame):
     pallet = bstone_pallet
@@ -117,6 +127,7 @@ class BstonePlanet(Wolf3dGame):
     headfile = 'VGAHEAD.VSI'
     graphfile = 'VGAGRAPH.VSI'
     graphics_offset = 6
+    font_chunks = [1,2,3,4,5]
 
 def detect_game(gamedir):
     gamedir = Path(gamedir)
