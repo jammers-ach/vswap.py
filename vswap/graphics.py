@@ -6,7 +6,7 @@ from collections import namedtuple
 from vswap.huffman import HuffmanTree
 from itertools import tee, chain
 
-from vswap.textures import Graphic
+from vswap.textures import Graphic, Font
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -116,12 +116,9 @@ def load_font(chunk, num_fonts=256):
     for off, width in zip(offsets, widths):
         if width == 0:
             continue
-        glpyh = bytes()
-        for i in range(width*height):
-            glpyh += bytes([readbyte(chunk, off + i)])
-        glyphs.append(glpyh)
-
-
+        data = bytes([readbyte(chunk, off + i) for i in range(width*height)])
+        font = Font.from_chunk(data, width, height)
+        glyphs.append(font)
     return glyphs
 
 if __name__ == '__main__':
@@ -138,6 +135,13 @@ if __name__ == '__main__':
         header = load_head(gamedir, headfile)
         chunks = load_chunks(gamedir, graphfile, tree, header)
         fonts = load_fonts(chunks, [1,2,3,4,5])
+
+        from vswap.pallets import wolf3d_pallet
+
+        for f, font in enumerate(fonts):
+            for g, glyph in enumerate(font):
+                fname = "out/{}-{:03d}.png".format(f,g)
+                glyph.output(fname,wolf3d_pallet)
 
 
 
