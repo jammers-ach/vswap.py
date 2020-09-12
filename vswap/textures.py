@@ -47,6 +47,25 @@ class Texture:
         result.save(filename)
 
 
+class Font(Texture):
+    def __init__(self, texture):
+        self.size = texture.shape
+        self.texture = texture
+
+    @classmethod
+    def from_chunk(cls, data, w, h):
+        assert len(data) == (w * h), "wrong image size, expected {} bytes got {}".format((w*h), len(data) )
+
+        conv = lambda x: -1 if x == 0x00 else 0
+        data = np.array([conv(i) for i in data])
+        # reshape
+        data = data.reshape((h,w))
+
+        return cls(data)
+
+
+
+
 class Graphic(Texture):
 
     def __init__(self, texture):

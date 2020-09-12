@@ -6,7 +6,7 @@ from collections import namedtuple
 from vswap.huffman import HuffmanTree
 from itertools import tee, chain
 
-from vswap.textures import Graphic
+from vswap.textures import Graphic, Font
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -15,6 +15,8 @@ def pairwise(iterable):
     return zip(a, b)
 
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+readsignedword = lambda d,p: struct.unpack('<h', d[p:p+2])[0]
+readbyte = lambda d,p: struct.unpack('<B', d[p:p+1])[0]
 
 # All made possible with the help of:
 # http://gaarabis.free.fr/_sites/specs/files/wlspec_VGA.html
@@ -102,6 +104,23 @@ def extract_images(chunk, graphics_offset=3):
 
     return images
 
+
+def load_fonts(chunks, font_offsets):
+    return [load_font(chunks[i]) for i in font_offsets]
+
+def load_font(chunk, num_fonts=256):
+    height = readword(chunk, 0)
+    offsets = [readsignedword(chunk, 2+(2*i)) for i in range(num_fonts)]
+    widths = [readbyte(chunk, 2+(2*256)+i) for i in range(num_fonts)]
+    glyphs = []
+    for off, width in zip(offsets, widths):
+        if width == 0:
+            continue
+        data = bytes([readbyte(chunk, off + i) for i in range(width*height)])
+        font = Font.from_chunk(data, width, height)
+        glyphs.append(font)
+    return glyphs
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
@@ -115,10 +134,14 @@ if __name__ == '__main__':
         tree = load_dict(gamedir, dictfile)
         header = load_head(gamedir, headfile)
         chunks = load_chunks(gamedir, graphfile, tree, header)
-        images = extract_images(chunks, graphics_offset=6)
+        fonts = load_fonts(chunks, [1,2,3,4,5])
+
         from vswap.pallets import wolf3d_pallet
-        for i, image in enumerate(images):
-            image.output("out/graphics{}.png".format(i), wolf3d_pallet)
+
+        for f, font in enumerate(fonts):
+            for g, glyph in enumerate(font):
+                fname = "out/{}-{:03d}.png".format(f,g)
+                glyph.output(fname,wolf3d_pallet)
 
 
 
