@@ -15,6 +15,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 readword = lambda d,p: struct.unpack('<H', d[p:p+2])[0]
+readsignedword = lambda d,p: struct.unpack('<h', d[p:p+2])[0]
 readbyte = lambda d,p: struct.unpack('<B', d[p:p+1])[0]
 
 # All made possible with the help of:
@@ -109,14 +110,19 @@ def load_fonts(chunks, font_offsets):
 
 def load_font(chunk, num_fonts=256):
     height = readword(chunk, 0)
-    print(height)
-    offsets = [readword(chunk, 1+(2*i)) for i in range(num_fonts)]
-    print(offsets)
-    widths = [readbyte(chunk, (2*256)+i) for i in range(num_fonts)]
-    print(widths)
+    offsets = [readsignedword(chunk, 2+(2*i)) for i in range(num_fonts)]
+    widths = [readbyte(chunk, 2+(2*256)+i) for i in range(num_fonts)]
+    glyphs = []
     for off, width in zip(offsets, widths):
-        glyph = [readbyte(chunk, off + i) for i in range(width*height)]
-        print(glyph)
+        if width == 0:
+            continue
+        glpyh = bytes()
+        for i in range(width*height):
+            glpyh += bytes([readbyte(chunk, off + i)])
+        glyphs.append(glpyh)
+
+
+    return glyphs
 
 if __name__ == '__main__':
 
@@ -131,7 +137,7 @@ if __name__ == '__main__':
         tree = load_dict(gamedir, dictfile)
         header = load_head(gamedir, headfile)
         chunks = load_chunks(gamedir, graphfile, tree, header)
-        fonts = load_fonts(chunks, [1,2])
+        fonts = load_fonts(chunks, [1,2,3,4,5])
 
 
 
