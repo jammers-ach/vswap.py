@@ -3,11 +3,12 @@ import os
 
 from pathlib import Path
 
-from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks, group_sound_chunks
+from vswap.sprites import load_swap_chunk_offsets, load_sprite_chunks
 from vswap.pallets import wolf3d_pallet, bstone_pallet
 from vswap.textures import Wall, Sprite
 from vswap.sounds import Sound
 from vswap.graphics import load_dict, load_head, load_chunks, extract_images, load_fonts
+from vswap.adlib import load_audio_head, load_audio, convert_to_wav
 
 logger = logging.getLogger(name=__name__)
 
@@ -27,6 +28,8 @@ class Wolf3dGame():
         self.dictfile = self._correct_case(self.dictfile)
         self.headfile = self._correct_case(self.headfile)
         self.graphfile = self._correct_case(self.graphfile)
+        self.audiot = self._correct_case(self.audiot)
+        self.audiohead = self._correct_case(self.audiohead)
 
 
     def _correct_case(self, fname):
@@ -45,6 +48,7 @@ class Wolf3dGame():
     def load_all(self):
         self.load_vswaps()
         self.load_graphics()
+        self.load_adlib()
 
     def load_vswaps(self):
         logger.info("Loading %s", self.swapfile)
@@ -70,6 +74,13 @@ class Wolf3dGame():
         self.images = extract_images(chunks, self.graphics_offset)
         self.fonts = load_fonts(chunks, self.font_chunks)
 
+    def load_adlib(self):
+        logger.info("Loading %s", self.audiohead)
+        header = load_audio_head(self.gamedir, self.audiohead)
+        audios = load_audio(self.gamedir, self.audiot, header)
+        fx, music = convert_to_wav(audios, self.fx_chunks, self.music_chunks)
+        self.fx = fx
+        self.music = music
 
 
     def output(self, target):
@@ -97,6 +108,13 @@ class Wolf3dGame():
                 fname = "font-{}-{:03d}.png".format(i+1,j)
                 glyph.output(target / fname, self.pallet)
 
+        for i, fx in enumerate(self.fx):
+            fname = "fx{:03d}.wav".format(i)
+            fx.output(target / fname)
+
+        for i, music in enumerate(self.music):
+            fname = "music{:03d}.wav".format(i)
+            music.output(target / fname)
 
 
 
@@ -107,9 +125,12 @@ class Wolf3dFull(Wolf3dGame):
     dictfile = 'VGADICT.WL6'
     headfile = 'VGAHEAD.WL6'
     graphfile = 'VGAGRAPH.WL6'
+    audiohead = 'AUDIOHED.WL6'
+    audiot = 'AUDIOT.WL6'
     graphics_offset = 3
     font_chunks = [1,2]
-
+    music_chunks = [261,261+17]
+    fx_chunks = [87,173]
 
 class BstoneFull(Wolf3dGame):
     pallet = bstone_pallet
@@ -117,8 +138,12 @@ class BstoneFull(Wolf3dGame):
     dictfile = 'VGADICT.BS6'
     headfile = 'VGAHEAD.BS6'
     graphfile = 'VGAGRAPH.BS6'
+    audiohead = 'AUDIOHED.BS6'
+    audiot = 'AUDIOT.BS6'
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
+    music_chunks = [300,319]
+    fx_chunks = [100,199]
 
 class BstonePlanet(Wolf3dGame):
     pallet = bstone_pallet
@@ -126,8 +151,12 @@ class BstonePlanet(Wolf3dGame):
     dictfile = 'VGADICT.VSI'
     headfile = 'VGAHEAD.VSI'
     graphfile = 'VGAGRAPH.VSI'
+    audiohead = 'AUDIOHED.VSI'
+    audiot = 'AUDIOT.VSI'
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
+    music_chunks = [300,319]
+    fx_chunks = [100,199]
 
 def detect_game(gamedir):
     gamedir = Path(gamedir)
