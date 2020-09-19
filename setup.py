@@ -8,5 +8,9 @@ setup(name='vswap',
       author_email='jammers@gmail.com',
       url='https://github.com/jammers-ach/vswap.py',
       packages=['vswap',],
-      install_requires=['pytest', 'numpy', 'Pillow', 'wave']
+      install_requires=['pytest', 'numpy', 'Pillow', 'wave',
+                        'pyopl'],
+      dependency_links=[
+          'https://github.com/adambiser/pyopl/archive/master.zip#egg=pyopl'
+      ]
      )
