@@ -130,7 +130,7 @@ class Wolf3dFull(Wolf3dGame):
     graphics_offset = 3
     font_chunks = [1,2]
     music_chunks = [261,261+17]
-    fx_chunks = [100,200]
+    fx_chunks = [87,173]
 
 class BstoneFull(Wolf3dGame):
     pallet = bstone_pallet
@@ -143,7 +143,7 @@ class BstoneFull(Wolf3dGame):
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
     music_chunks = [300,319]
-    fx_chunks = [100,200]
+    fx_chunks = [100,199]
 
 class BstonePlanet(Wolf3dGame):
     pallet = bstone_pallet
@@ -156,7 +156,7 @@ class BstonePlanet(Wolf3dGame):
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
     music_chunks = [300,319]
-    fx_chunks = [100,200]
+    fx_chunks = [100,199]
 
 def detect_game(gamedir):
     gamedir = Path(gamedir)

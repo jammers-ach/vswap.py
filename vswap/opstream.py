@@ -99,7 +99,42 @@ class OPLStream:
 
     @classmethod
     def from_adlibfx(cls, f):
-        pass
+        # All made possible thanks to
+        # http://www.shikadi.net/moddingwiki/Adlib_sound_effect
+        length, = unpack('<L', f[0:4])
+        assert len(f) - length == 33, "FX chunk is not valid"
+        priority, = unpack('<H', f[4:6])
+        instrument_settings = f[6:6+16]
+        octave = f[6+16]
+        sound = f[6+17:6+17+length]
+
+        oplStream = cls(140)
+        oplStream.writeReg(0x20, instrument_settings[0])
+        oplStream.writeReg(0x23, instrument_settings[1])
+        oplStream.writeReg(0x40, instrument_settings[2])
+        oplStream.writeReg(0x43, instrument_settings[3])
+        oplStream.writeReg(0x60, instrument_settings[4])
+        oplStream.writeReg(0x63, instrument_settings[5])
+        oplStream.writeReg(0x80, instrument_settings[6])
+        oplStream.writeReg(0x83, instrument_settings[7])
+        oplStream.writeReg(0xE0, instrument_settings[8])
+        oplStream.writeReg(0xE3, instrument_settings[9])
+        oplStream.writeReg(0xC0, instrument_settings[10])
+
+        block = (octave & 7) << 2
+        note = False
+        for b in sound:
+            if b == 0:
+                oplStream.writeReg(0xb0, block)
+                note = False
+            else:
+                oplStream.writeReg(0xA0, b)
+                if not note:
+                    oplStream.writeReg(0xb0, block | 0x20)
+                    note = True
+            oplStream.wait(1)
+
+        return oplStream
 
 
 if __name__ == '__main__':

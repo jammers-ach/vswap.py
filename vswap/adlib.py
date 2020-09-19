@@ -50,9 +50,11 @@ def convert_to_wav(audios, fx_chunks, music_chunks):
     logger.info("Converting soundfx")
     fx = []
     # TODO
-    #for i in range(fx_chunks[0], fx_chunks[1]):
-    #    print("reading fx {} ({} bytes)".format(i, len(audios[i])))
-    #    fx.append(Sound.from_adlib(audios[i]))
+    for i in range(fx_chunks[0], fx_chunks[1]):
+        try:
+            fx.append(Sound.from_adlibfx(audios[i]))
+        except AssertionError as e:
+            raise Exception("Chunk {} is not a valid fx chunk".format(i))
 
     logger.info("Converting music")
     music = [Sound.from_imf(audios[i]) for i in range(music_chunks[0], music_chunks[1])]
@@ -76,7 +78,7 @@ if __name__ == '__main__':
         for i, a in enumerate(audios):
             print("{:02d} {}".format(i, len(a)))
 
-        fx, music= convert_to_wav(audios, [100,110], [300, 319])
+        fx, music= convert_to_wav(audios, [100,199], [300, 319])
 
         for i, m in enumerate(music):
             fname="out/music{:03d}.wav".format(i)

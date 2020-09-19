@@ -45,8 +45,7 @@ class Sound():
     @classmethod
     def from_adlibfx(cls, data):
         '''make a sound from adlib music'''
-        stream = BytesIO(data)
-        oplstream = OPLStream.from_adlibfx(stream)
+        oplstream = OPLStream.from_adlibfx(data)
         sound = cls()
         sound.nchannels = oplstream.num_channels
         sound.samplewidth = oplstream.sample_size
