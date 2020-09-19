@@ -1,8 +1,12 @@
 # with help from
 # http://www.shikadi.net/moddingwiki/AudioT_Format
 import struct
-import os
-from itertools import tee, chain
+import logging
+
+from vswap.sounds import Sound
+from itertools import tee
+
+logger = logging.getLogger(name=__name__)
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -11,7 +15,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 
-def load_head(gamedir, audiohead):
+def load_audio_head(gamedir, audiohead):
     audiohead = gamedir / audiohead
 
     offsets = []
@@ -23,7 +27,6 @@ def load_head(gamedir, audiohead):
             offset = struct.unpack('<L', data)[0]
             offsets.append(offset)
 
-    print(offsets)
     return offsets
 
 def load_audio(gamedir, audiofile, offsets):
@@ -31,13 +34,29 @@ def load_audio(gamedir, audiofile, offsets):
 
     audios = []
 
+
     with audio.open('rb') as f:
         for o1, o2 in pairwise(offsets):
             size = o2-o1
             if size != 0:
                 data = f.read(size)
                 audios.append(data)
+            else:
+                audios.append(bytes())
+
     return audios
+
+def convert_to_wav(audios, fx_chunks, music_chunks):
+    logger.info("Converting soundfx")
+    fx = []
+    # TODO
+    #for i in range(fx_chunks[0], fx_chunks[1]):
+    #    print("reading fx {} ({} bytes)".format(i, len(audios[i])))
+    #    fx.append(Sound.from_adlib(audios[i]))
+
+    logger.info("Converting music")
+    music = [Sound.from_adlib(audios[i]) for i in range(music_chunks[0], music_chunks[1])]
+    return [fx, music]
 
 if __name__ == '__main__':
     import sys
@@ -50,10 +69,19 @@ if __name__ == '__main__':
         headfile = 'audiohed.bs6'
         audiofile = 'audiot.bs6'
 
-        header = load_head(gamedir, headfile)
+        header = load_audio_head(gamedir, headfile)
         audios = load_audio(gamedir, audiofile, header)
+        print(len(audios))
 
-        for i, audio in enumerate(audios):
-            fname = 'out/audio{:03d}.imf'.format(i)
-            with open(fname, 'wb') as f:
-                f.write(audio)
+        for i, a in enumerate(audios):
+            print("{:02d} {}".format(i, len(a)))
+
+        fx, music= convert_to_wav(audios, [100,110], [300, 319])
+
+        for i, m in enumerate(music):
+            fname="out/music{:03d}.wav".format(i)
+            m.output(fname)
+
+        for i, f in enumerate(fx):
+            fname="out/fx{:03d}.wav".format(i)
+            f.output(fname)

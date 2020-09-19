@@ -59,7 +59,6 @@ class OPLStream:
             f.setframerate(self.freq)
             f.writeframes(self.get_pcm())
 
-
     @classmethod
     def from_file(cls, fname, ticksPerSecond=700):
         with open(fname, 'rb') as f:
