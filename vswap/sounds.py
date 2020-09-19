@@ -2,6 +2,7 @@ import logging
 import wave
 
 from io import BytesIO
+from opstream import OPLStream
 
 logger = logging.getLogger(name=__name__)
 
@@ -30,9 +31,8 @@ class Sound():
         return sound
 
     @classmethod
-    def from_adlib(cls, data):
-        '''make a sound from adlib data'''
-        from opstream import OPLStream
+    def from_imf(cls, data):
+        '''make a sound from adlib music'''
         stream = BytesIO(data)
         oplstream = OPLStream.from_stream(stream)
         sound = cls()
@@ -42,3 +42,14 @@ class Sound():
         sound.data = oplstream.get_pcm()
         return sound
 
+    @classmethod
+    def from_adlibfx(cls, data):
+        '''make a sound from adlib music'''
+        stream = BytesIO(data)
+        oplstream = OPLStream.from_adlibfx(stream)
+        sound = cls()
+        sound.nchannels = oplstream.num_channels
+        sound.samplewidth = oplstream.sample_size
+        sound.samplerate = oplstream.freq
+        sound.data = oplstream.get_pcm()
+        return sound

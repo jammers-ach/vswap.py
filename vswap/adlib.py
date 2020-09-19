@@ -55,7 +55,7 @@ def convert_to_wav(audios, fx_chunks, music_chunks):
     #    fx.append(Sound.from_adlib(audios[i]))
 
     logger.info("Converting music")
-    music = [Sound.from_adlib(audios[i]) for i in range(music_chunks[0], music_chunks[1])]
+    music = [Sound.from_imf(audios[i]) for i in range(music_chunks[0], music_chunks[1])]
     return [fx, music]
 
 if __name__ == '__main__':

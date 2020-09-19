@@ -97,6 +97,11 @@ class OPLStream:
         return oplStream
 
 
+    @classmethod
+    def from_adlibfx(cls, f):
+        pass
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Please specify one IMF filename.")
