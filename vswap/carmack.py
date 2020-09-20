@@ -31,7 +31,6 @@ def carmack_decompress(data):
     # First word (2 bytes) tell us the size of
     # The uncompressed data in bytes
     size = readword(data,0)
-    print("cmrk Should dcompress", size, "data is:", len(data))
     new_data = [0] * (size)
 
     src_pointer = 2
@@ -72,7 +71,6 @@ def carmack_decompress(data):
 
 def rlew_decompress(data):
     size = int(readword(data,0) / 2)
-    print("rlew Should dcompress", size, " words data is:", len(data), "bytes")
     decomp_words = []
 
     src_pointer = 2
