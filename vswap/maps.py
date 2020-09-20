@@ -4,6 +4,8 @@ import pathlib
 import struct
 import os
 import numpy as np
+import json
+
 from collections import namedtuple
 from vswap.carmack import carmack_decompress, rlew_decompress
 
@@ -46,8 +48,6 @@ class Wolf3dMap():
                 if other_data[index]:
                     self.object_list.append(((i,j), "Other-{}".format(other_data[index])))
 
-
-
     @property
     def width(self):
         return self.map_header.width
@@ -68,6 +68,20 @@ class Wolf3dMap():
 
         for loc, obj in self.object_list:
             print(loc, obj)
+
+    @property
+    def json(self):
+        data = {}
+        data['level'] = self.level.tolist()
+        data['object_list'] = self.object_list
+        data['name'] = self.name
+        data['size'] = (self.width, self.height)
+        return data
+
+
+    def output(self, fname):
+        with open(fname, 'w') as f:
+            json.dump(self.json, f)
 
 
 def extract_map_offsets(gamedir, maphead):
@@ -143,7 +157,6 @@ def extract_maps(gamedir, gamemaps, offsets):
                               convert_to_shorts(object_data, header.width* header.height),
                               convert_to_shorts(map_data, header.width * header.height),
                               convert_to_shorts(other_data, header.width * header.height))
-            print(level.name)
             maps.append(level)
 
     return maps
