@@ -9,6 +9,7 @@ from vswap.textures import Wall, Sprite
 from vswap.sounds import Sound
 from vswap.graphics import load_dict, load_head, load_chunks, extract_images, load_fonts
 from vswap.adlib import load_audio_head, load_audio, convert_to_wav
+from vswap.maps import extract_map_offsets, extract_maps
 
 logger = logging.getLogger(name=__name__)
 
@@ -30,6 +31,8 @@ class Wolf3dGame():
         self.graphfile = self._correct_case(self.graphfile)
         self.audiot = self._correct_case(self.audiot)
         self.audiohead = self._correct_case(self.audiohead)
+        self.maphead = self._correct_case(self.maphead)
+        self.gamemaps = self._correct_case(self.gamemaps)
 
 
     def _correct_case(self, fname):
@@ -46,9 +49,16 @@ class Wolf3dGame():
 
 
     def load_all(self):
+        self.load_maps()
         self.load_vswaps()
         self.load_graphics()
         self.load_adlib()
+
+
+    def load_maps(self):
+        logger.info("Loading %s", self.gamemaps)
+        offsets = extract_map_offsets(self.gamedir, self.maphead)
+        self.maps = extract_maps(self.gamedir, self.gamemaps, offsets)
 
     def load_vswaps(self):
         logger.info("Loading %s", self.swapfile)
@@ -86,6 +96,14 @@ class Wolf3dGame():
     def output(self, target):
         '''output all our assests to a target directory'''
         target = Path(target)
+
+        for i, level in enumerate(self.maps):
+            fname = "level{:04d}.json".format(i)
+            fname2= "level{:04d}.txt".format(i)
+            level.output(target / fname)
+
+            with open(target / fname2,"w") as f:
+                f.write(level.render_map())
 
         for i, sound in enumerate(self.sounds):
             fname = "sound{:04d}.wav".format(i)
@@ -127,6 +145,8 @@ class Wolf3dFull(Wolf3dGame):
     graphfile = 'VGAGRAPH.WL6'
     audiohead = 'AUDIOHED.WL6'
     audiot = 'AUDIOT.WL6'
+    maphead = 'MAPHEAD.WL6'
+    gamemaps = 'GAMEMAPS.WL6'
     graphics_offset = 3
     font_chunks = [1,2]
     music_chunks = [261,261+17]
@@ -140,6 +160,8 @@ class BstoneFull(Wolf3dGame):
     graphfile = 'VGAGRAPH.BS6'
     audiohead = 'AUDIOHED.BS6'
     audiot = 'AUDIOT.BS6'
+    maphead = 'MAPHEAD.BS6'
+    gamemaps = 'MAPTEMP.BS6'
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
     music_chunks = [300,319]
@@ -153,6 +175,8 @@ class BstonePlanet(Wolf3dGame):
     graphfile = 'VGAGRAPH.VSI'
     audiohead = 'AUDIOHED.VSI'
     audiot = 'AUDIOT.VSI'
+    maphead = 'MAPHEAD.VSI'
+    gamemaps = 'MAPTEMP.VSI'
     graphics_offset = 6
     font_chunks = [1,2,3,4,5]
     music_chunks = [300,319]
