@@ -152,6 +152,21 @@ class Wolf3dFull(Wolf3dGame):
     music_chunks = [261,261+17]
     fx_chunks = [87,173]
 
+class SpearOfDestinyFull(Wolf3dGame):
+    pallet = wolf3d_pallet
+    swapfile = 'VSWAP.SOD'
+    dictfile = 'VGADICT.SOD'
+    headfile = 'VGAHEAD.SOD'
+    graphfile = 'VGAGRAPH.SOD'
+    audiohead = 'AUDIOHED.SOD'
+    audiot = 'AUDIOT.SOD'
+    maphead = 'MAPHEAD.SOD'
+    gamemaps = 'GAMEMAPS.SOD'
+    graphics_offset = 3
+    font_chunks = [1,2]
+    music_chunks = [243,243+24]
+    fx_chunks = [81,161]
+
 class BstoneFull(Wolf3dGame):
     pallet = bstone_pallet
     swapfile = 'VSWAP.BS6'
@@ -184,7 +199,7 @@ class BstonePlanet(Wolf3dGame):
 
 def detect_game(gamedir):
     gamedir = Path(gamedir)
-    games = [Wolf3dFull, BstoneFull, BstonePlanet]
+    games = [Wolf3dFull, SpearOfDestinyFull, BstoneFull, BstonePlanet]
     for game in games:
         fname = game.swapfile
         if os.path.isfile(gamedir / fname.upper()) or \
