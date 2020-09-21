@@ -61,14 +61,16 @@ class Wolf3dMap():
     def name(self):
         return str(self.map_header.name, 'ascii')
 
-    def print_map(self):
+    def render_map(self):
+        text = ""
         for i in range(self.width):
             for j in range(self.height):
-                print("{:02X}".format(self.level[i,j]), end='')
-            print('')
+                text += "{:02X}".format(self.level[i,j])
+            text += "\n"
 
         for loc, obj in self.object_list:
-            print(loc, obj)
+            text += "{},{} = {}\n".format(loc[0],loc[1], obj)
+        return text
 
     @property
     def json(self):
@@ -203,4 +205,4 @@ if __name__ == '__main__':
         gamedir = pathlib.Path(sys.argv[1])
         offsets = extract_map_offsets(gamedir, 'MAPHEAD.WL6')
         maps = extract_maps(gamedir, 'GAMEMAPS.WL6', offsets)
-        maps[0].print_map()
+        print(maps[0].render_map())

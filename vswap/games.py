@@ -99,7 +99,11 @@ class Wolf3dGame():
 
         for i, level in enumerate(self.maps):
             fname = "level{:04d}.json".format(i)
+            fname2= "level{:04d}.txt".format(i)
             level.output(target / fname)
+
+            with open(target / fname2,"w") as f:
+                f.write(level.render_map())
 
         for i, sound in enumerate(self.sounds):
             fname = "sound{:04d}.wav".format(i)
