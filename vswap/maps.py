@@ -5,6 +5,7 @@ import struct
 import os
 import numpy as np
 import json
+import logging
 
 from collections import namedtuple
 from vswap.carmack import carmack_decompress, rlew_decompress
@@ -12,7 +13,7 @@ from vswap.carmack import carmack_decompress, rlew_decompress
 # All made possible with the help of:
 # http://web.archive.org/web/20160625002331/http://devinsmith.net/backups/bruce/wolf3d.html
 
-
+logger = logging.getLogger(__name__)
 
 LevelHeader = namedtuple("LevelHeader", ["map_pointer",
                             "object_pointer",
@@ -43,9 +44,9 @@ class Wolf3dMap():
         for i in range(self.width):
             for j in range(self.height):
                 index = (i*self.width) + j
-                if object_data[index]:
+                if object_data and object_data[index]:
                     self.object_list.append(((i,j), object_data[index]))
-                if other_data[index]:
+                if other_data and other_data[index]:
                     self.object_list.append(((i,j), "Other-{}".format(other_data[index])))
 
     @property
@@ -121,6 +122,8 @@ def extract_maps(gamedir, gamemaps, offsets):
     :param pathlib.Path gamedir: location of the game wiht a MAPHEAD
     :param offsets: a list of integers where the
     '''
+    # see http://www.shikadi.net/moddingwiki/TED5
+    uncompressed = gamemaps.lower().startswith('maptemp')
     gamemaps = gamedir / gamemaps
 
     #  {
@@ -141,6 +144,8 @@ def extract_maps(gamedir, gamemaps, offsets):
     with gamemaps.open('rb') as f:
         for offset in offsets:
             #Get the level header
+            if offset == 0xffffffff:
+                continue
             data = struct.unpack_from(fmt, seek_and_read(f, offset, datasize))
             header = LevelHeader(*data)
 
@@ -149,14 +154,33 @@ def extract_maps(gamedir, gamemaps, offsets):
             map_data = seek_and_read(f, header.map_pointer, header.map_size)
             other_data = seek_and_read(f, header.other_pointer, header.other_size)
 
-            object_data = rlew_decompress(carmack_decompress(object_data))
-            map_data = rlew_decompress(carmack_decompress(map_data))
-            other_data = rlew_decompress(carmack_decompress(other_data))
+            if not uncompressed:
+                object_data = carmack_decompress(object_data)
+                map_data = carmack_decompress(map_data)
+                other_data = carmack_decompress(other_data)
+
+            if len(map_data) == 0:
+                logger.info("Map {} has no map data, skipping".format(str(header.name)))
+                continue
+
+            map_data = rlew_decompress(map_data)
+            if len(object_data):
+                object_data = rlew_decompress(object_data)
+                object_data = convert_to_shorts(object_data, header.width* header.height)
+            else:
+                object_data = None
+
+            if len(other_data):
+                other_data = rlew_decompress(other_data)
+                other_data = convert_to_shorts(other_data, header.width * header.height)
+            else:
+                other_data = None
 
             level = Wolf3dMap(header,
-                              convert_to_shorts(object_data, header.width* header.height),
+                              object_data,
                               convert_to_shorts(map_data, header.width * header.height),
-                              convert_to_shorts(other_data, header.width * header.height))
+                              other_data
+                              )
             maps.append(level)
 
     return maps
