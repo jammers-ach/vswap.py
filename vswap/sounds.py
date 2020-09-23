@@ -2,7 +2,7 @@ import logging
 import wave
 
 from io import BytesIO
-from opstream import OPLStream
+from vswap.opstream import OPLStream
 
 logger = logging.getLogger(name=__name__)
 

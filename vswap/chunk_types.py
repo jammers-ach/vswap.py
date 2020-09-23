@@ -1,10 +1,5 @@
 import struct
 
-class PictTable(Chunk):
-    '''defines the width and height of the pictures'''
-    fmt = '<HH'
-    fields = ['width', 'height']
-
 
 class Chunk:
     '''Generic data chunk
@@ -32,4 +27,9 @@ class Chunk:
         ret.chunk_id = chunk_id
         return ret
 
+
+class PictTable(Chunk):
+    '''defines the width and height of the pictures'''
+    fmt = '<HH'
+    fields = ['width', 'height']
 

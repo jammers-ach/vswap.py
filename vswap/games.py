@@ -93,9 +93,23 @@ class Wolf3dGame():
         self.music = music
 
 
+    def _output_walls(self, target):
+        for i, wall in enumerate(self.walls):
+            fname = "wall{:04d}.png".format(i)
+            wall.output(target / fname, self.pallet)
+
+    def _output_sprites(self, target):
+        for i, sprite in enumerate(self.sprites):
+            fname = "sprite{:04d}.png".format(i)
+            sprite.output(target / fname, self.pallet)
+
+
     def output(self, target):
         '''output all our assests to a target directory'''
         target = Path(target)
+
+        self._output_walls(target)
+        self._output_sprites(target)
 
         for i, level in enumerate(self.maps):
             fname = "level{:04d}.json".format(i)
@@ -109,13 +123,6 @@ class Wolf3dGame():
             fname = "sound{:04d}.wav".format(i)
             sound.output(target / fname)
 
-        for i, sprite in enumerate(self.sprites):
-            fname = "sprite{:04d}.png".format(i)
-            sprite.output(target / fname, self.pallet)
-
-        for i, wall in enumerate(self.walls):
-            fname = "wall{:04d}.png".format(i)
-            wall.output(target / fname, self.pallet)
 
         for i, image in enumerate(self.images):
             fname = "image{:04d}.png".format(i)
