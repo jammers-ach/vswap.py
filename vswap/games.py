@@ -69,8 +69,10 @@ class Wolf3dGame():
         self.sounds = []
         for chunk in vswap_chunks:
             if type(chunk) == Sprite:
+                chunk.pallet_convert(self.pallet)
                 self.sprites.append(chunk)
             if type(chunk) == Wall:
+                chunk.pallet_convert(self.pallet)
                 self.walls.append(chunk)
             if type(chunk) == Sound:
                 self.sounds.append(chunk)
@@ -82,7 +84,13 @@ class Wolf3dGame():
         header = load_head(self.gamedir, self.headfile)
         chunks = load_chunks(self.gamedir, self.graphfile, tree, header)
         self.images = extract_images(chunks, self.graphics_offset)
+        for chunk in self.images:
+            chunk.pallet_convert(self.pallet)
         self.fonts = load_fonts(chunks, self.font_chunks)
+
+        for i, font in enumerate(self.fonts):
+            for j, glyph in enumerate(font):
+                glyph.pallet_convert(self.pallet)
 
     def load_adlib(self):
         logger.info("Loading %s", self.audiohead)
@@ -96,12 +104,12 @@ class Wolf3dGame():
     def _output_walls(self, target):
         for i, wall in enumerate(self.walls):
             fname = "wall{:04d}.png".format(i)
-            wall.output(target / fname, self.pallet)
+            wall.output(target / fname)
 
     def _output_sprites(self, target):
         for i, sprite in enumerate(self.sprites):
             fname = "sprite{:04d}.png".format(i)
-            sprite.output(target / fname, self.pallet)
+            sprite.output(target / fname)
 
 
     def output(self, target):
@@ -126,12 +134,12 @@ class Wolf3dGame():
 
         for i, image in enumerate(self.images):
             fname = "image{:04d}.png".format(i)
-            image.output(target / fname, self.pallet)
+            image.output(target / fname)
 
         for i, font in enumerate(self.fonts):
             for j, glyph in enumerate(font):
                 fname = "font-{}-{:03d}.png".format(i+1,j)
-                glyph.output(target / fname, self.pallet)
+                glyph.output(target / fname)
 
         for i, fx in enumerate(self.fx):
             fname = "fx{:03d}.wav".format(i)
