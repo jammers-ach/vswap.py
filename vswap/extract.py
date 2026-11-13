@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import pathlib
 import logging
 
-from games import detect_game
+from vswap.games import detect_game
 
 def extract(gamedir, target):
     gamecls = detect_game(gamedir)
@@ -11,7 +13,8 @@ def extract(gamedir, target):
     game.load_all()
     game.output(target)
 
-def run():
+def main():
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description='Extracts')
     parser.add_argument('gamedir', metavar='ASSET_DIR',
                         help='Directory of game assets')
@@ -33,6 +36,5 @@ def run():
     extract(args.gamedir, args.target)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    run()
+    main()
 

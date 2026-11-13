@@ -32,7 +32,7 @@ class Texture:
 
     def pallet_convert(self, pallet):
         new_texture = np.empty((self.size[0], self.size[1], 4), dtype='uint8')
-        t = lambda x: pallet[int(x)]
+        t = lambda x: pallet[int(x.item())]
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 r,g,b = t(self.texture[i][j])

@@ -147,7 +147,10 @@ class Wolf3dGame():
 
         for i, music in enumerate(self.music):
             fname = "music{:03d}.wav".format(i)
+            fname2 = "music{:03d}.imf".format(i)
             music.output(target / fname)
+            music.output_imf(target / fname2)
+
 
 
 

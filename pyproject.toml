@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vswap"
+version = "1.0.0"
+description = "VGM/OPL music playback and conversion tools"
+authors = [
+{ name = "jammers", email = "jammers@gmail.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+"numpy",
+"Pillow",
+"pyopl @ git+https://github.com/adambiser/pyopl.git",
+]
+
+[project.optional-dependencies]
+dev = [
+"pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/jammers-ach/vswap.py"
+Repository = "https://github.com/jammers-ach/vswap.py"
+
+[tool.setuptools]
+packages = ["vswap"]
+
+[project.scripts]
+vswap = "vswap.extract:main"
