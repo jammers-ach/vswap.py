@@ -18,6 +18,8 @@ class Texture:
     def __init__(self, texture):
         assert texture.shape == self.size, "{} expected {}".format(texture.shape, self.size)
         self.texture = texture
+        # Has this been converted yet?
+        self._new_pallet = False
 
     def __str__(self):
         '''Quick debug print of this Texture'''
@@ -28,9 +30,9 @@ class Texture:
             render += "\n"
         return render
 
-    def _pallet_convert(self, pallet):
+    def pallet_convert(self, pallet):
         new_texture = np.empty((self.size[0], self.size[1], 4), dtype='uint8')
-        t = lambda x: pallet[int(x)]
+        t = lambda x: pallet[int(x.item())]
         for i in range(self.size[0]):
             for j in range(self.size[1]):
                 r,g,b = t(self.texture[i][j])
@@ -38,12 +40,15 @@ class Texture:
                 new_texture[i][j][1] = g
                 new_texture[i][j][2] = b
                 new_texture[i][j][3] = 0 if self.texture[i][j] == -1 else 255
-        return new_texture
+        self.texture = new_texture
+        self._new_pallet = True
 
-    def output(self, filename, pallet):
-        '''Write this'''
+    def output(self, filename):
+        '''Write this to an image'''
+        if not self._new_pallet:
+            raise Exception("object has not converted from original pallet")
         logger.info("writing %s", filename)
-        result = Image.fromarray(self._pallet_convert(pallet), mode='RGBA')
+        result = Image.fromarray(self.texture, mode='RGBA')
         result.save(filename)
 
 

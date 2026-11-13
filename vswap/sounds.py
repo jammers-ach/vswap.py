@@ -2,7 +2,7 @@ import logging
 import wave
 
 from io import BytesIO
-from opstream import OPLStream
+from vswap.opstream import OPLStream
 
 logger = logging.getLogger(name=__name__)
 
@@ -24,6 +24,12 @@ class Sound():
             f.setframerate(self.samplerate)
             f.writeframes(self.data)
 
+    def output_imf(self, filename):
+        assert self.raw_imf, "no imf data to write"
+        logger.info("writing %s", filename)
+        with open("{}".format(filename), 'wb') as f:
+            f.write(self.raw_imf)
+
     @classmethod
     def from_bytes(cls, data):
         sound = cls()
@@ -40,6 +46,7 @@ class Sound():
         sound.samplewidth = oplstream.sample_size
         sound.samplerate = oplstream.freq
         sound.data = oplstream.get_pcm()
+        sound.raw_imf = data
         return sound
 
     @classmethod
